@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\RoleManagementController;
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,16 @@ Route::middleware(['auth', 'can:manage roles'])
         Route::post('/permissions', [RoleManagementController::class, 'storePermission'])->name('permissions.store');
         Route::patch('/permissions/{permission}', [RoleManagementController::class, 'updatePermission'])->name('permissions.update');
         Route::delete('/permissions/{permission}', [RoleManagementController::class, 'destroyPermission'])->name('permissions.destroy');
+    });
+
+Route::middleware(['auth', 'can:manage users'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
+        Route::post('/users', [UserManagementController::class, 'store'])->name('users.store');
+        Route::patch('/users/{user}', [UserManagementController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
     });
 
 require __DIR__.'/auth.php';

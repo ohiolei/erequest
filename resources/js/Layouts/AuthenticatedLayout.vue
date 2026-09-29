@@ -7,6 +7,7 @@ import UserAccountMenu from '@/Components/UserAccountMenu.vue';
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+const canManageUsers = computed(() => page.props.auth.canManageUsers);
 const canManageRoles = computed(() => page.props.auth.canManageRoles);
 const userIsActive = computed(() => (user.value?.status ?? 'active') === 'active');
 
@@ -164,6 +165,21 @@ const isParentActive = (item) => {
                 <div class="p-4">
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Module Navigation</p>
                     <nav class="space-y-0.5">
+                        <Link
+                            v-if="canManageUsers"
+                            :href="route('admin.users.index')"
+                            :class="[
+                                'flex items-center gap-2.5 px-3 py-2.5 text-sm rounded-md transition',
+                                isActive('admin.users.index')
+                                    ? 'bg-purple-50 text-purple-700 font-medium dark:bg-purple-900/40 dark:text-purple-200'
+                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
+                            ]"
+                        >
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-5.5-3.72M9 20H2v-2a4 4 0 017.5-2M16 3.13a4 4 0 010 7.75M8 3.13a4 4 0 000 7.75M12 14a4 4 0 100-8 4 4 0 000 8z" />
+                            </svg>
+                            User Manager
+                        </Link>
                         <Link
                             v-if="canManageRoles"
                             :href="route('admin.roles.index')"
