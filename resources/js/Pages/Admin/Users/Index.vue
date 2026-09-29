@@ -12,6 +12,10 @@ const props = defineProps({
         type: Array,
         required: true,
     },
+    permissions: {
+        type: Array,
+        required: true,
+    },
     filters: {
         type: Object,
         required: true,
@@ -32,6 +36,7 @@ const createForm = useForm({
     password: '',
     password_confirmation: '',
     roles: ['student'],
+    permissions: [],
 });
 const userForms = reactive({});
 
@@ -44,6 +49,7 @@ watch(
                 email: user.email,
                 matric_no: user.matric_no ?? '',
                 roles: [...user.roles],
+                permissions: [...user.permissions],
             };
 
             if (!userForms[user.id]) {
@@ -123,7 +129,7 @@ const paginationLabel = (label) => label
     <Head title="User Manager" />
 
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-5 p-4 sm:p-6">
+        <div class="w-full max-w-none space-y-5 py-4 sm:py-6">
             <header class="flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-300">Administration</p>
@@ -183,6 +189,16 @@ const paginationLabel = (label) => label
                     </div>
                     <p v-if="createForm.errors.roles" class="mt-1 text-sm text-rose-600">{{ createForm.errors.roles }}</p>
                 </fieldset>
+                <fieldset>
+                    <legend class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Direct permissions</legend>
+                    <div class="flex flex-wrap gap-x-5 gap-y-2">
+                        <label v-for="permission in permissions" :key="permission" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                            <input v-model="createForm.permissions" type="checkbox" :value="permission" class="rounded border-gray-300 text-purple-700 focus:ring-purple-600" />
+                            {{ permission }}
+                        </label>
+                    </div>
+                    <p v-if="createForm.errors.permissions" class="mt-1 text-sm text-rose-600">{{ createForm.errors.permissions }}</p>
+                </fieldset>
                 <button type="submit" :disabled="createForm.processing" class="rounded-md bg-purple-700 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-800 disabled:opacity-60">
                     Create account
                 </button>
@@ -210,12 +226,22 @@ const paginationLabel = (label) => label
             </div>
 
             <div class="overflow-x-auto rounded-md border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-                <table class="w-full min-w-[1050px] divide-y divide-gray-200 text-left text-sm dark:divide-gray-700">
+                <table class="w-full min-w-[900px] table-fixed divide-y divide-gray-200 text-left text-sm dark:divide-gray-700 xl:min-w-0">
+                    <colgroup>
+                        <col class="w-[24%]" />
+                        <col class="w-[12%]" />
+                        <col class="w-[14%]" />
+                        <col class="w-[16%]" />
+                        <col class="w-[10%]" />
+                        <col class="w-[10%]" />
+                        <col class="w-[14%]" />
+                    </colgroup>
                     <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-900 dark:text-gray-400">
                         <tr>
                             <th scope="col" class="px-4 py-3">User</th>
                             <th scope="col" class="px-4 py-3">Matric number</th>
                             <th scope="col" class="px-4 py-3">Roles</th>
+                            <th scope="col" class="px-4 py-3">Direct permissions</th>
                             <th scope="col" class="px-4 py-3">Joined</th>
                             <th scope="col" class="px-4 py-3">Email verified</th>
                             <th scope="col" class="px-4 py-3 text-right">Actions</th>
@@ -223,7 +249,7 @@ const paginationLabel = (label) => label
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         <tr v-for="user in users.data" :key="user.id" class="align-top">
-                            <td class="min-w-64 px-4 py-3">
+                            <td class="min-w-0 px-2 py-3 lg:px-3">
                                 <label :for="`user-name-${user.id}`" class="sr-only">Name</label>
                                 <input :id="`user-name-${user.id}`" v-model="userForms[user.id].name" required class="mb-2 w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
                                 <label :for="`user-email-${user.id}`" class="sr-only">Email</label>
@@ -233,7 +259,7 @@ const paginationLabel = (label) => label
                             </td>
                             <td class="px-4 py-3">
                                 <label :for="`user-matric-${user.id}`" class="sr-only">Matric number</label>
-                                <input :id="`user-matric-${user.id}`" v-model="userForms[user.id].matric_no" class="w-40 rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
+                                <input :id="`user-matric-${user.id}`" v-model="userForms[user.id].matric_no" class="w-full min-w-0 rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
                                 <p v-if="userForms[user.id].errors.matric_no" class="mt-1 text-xs text-rose-600">{{ userForms[user.id].errors.matric_no }}</p>
                             </td>
                             <td class="px-4 py-3">
@@ -248,6 +274,19 @@ const paginationLabel = (label) => label
                                     </fieldset>
                                 </details>
                                 <p v-if="userForms[user.id].errors.roles" class="mt-1 text-xs text-rose-600">{{ userForms[user.id].errors.roles }}</p>
+                            </td>
+                            <td class="px-4 py-3">
+                                <details>
+                                    <summary class="w-fit cursor-pointer select-none rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-200">{{ userForms[user.id].permissions.length }} direct</summary>
+                                    <fieldset class="mt-2 space-y-2">
+                                        <legend class="sr-only">Direct user permissions</legend>
+                                        <label v-for="permission in permissions" :key="permission" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                            <input v-model="userForms[user.id].permissions" type="checkbox" :value="permission" class="rounded border-gray-300 text-purple-700 focus:ring-purple-600" />
+                                            {{ permission }}
+                                        </label>
+                                    </fieldset>
+                                </details>
+                                <p v-if="userForms[user.id].errors.permissions" class="mt-1 text-xs text-rose-600">{{ userForms[user.id].errors.permissions }}</p>
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-300">{{ user.created_at }}</td>
                             <td class="whitespace-nowrap px-4 py-3">
@@ -267,7 +306,7 @@ const paginationLabel = (label) => label
                             </td>
                         </tr>
                         <tr v-if="users.data.length === 0">
-                            <td colspan="6" class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">No users match these filters.</td>
+                            <td colspan="7" class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">No users match these filters.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -277,8 +316,7 @@ const paginationLabel = (label) => label
                 <Link
                     v-for="link in users.links"
                     :key="link.label"
-                    :href="link.url ?? '#'
-                    "
+                    :href="link.url ?? '#'"
                     :aria-current="link.active ? 'page' : undefined"
                     :class="[
                         'min-w-9 rounded border px-3 py-2 text-center text-sm',

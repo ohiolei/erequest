@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class UserManagementController extends Controller
@@ -21,7 +22,7 @@ class UserManagementController extends Controller
         $roleFilter = (string) $request->query('role', '');
 
         $users = User::query()
-            ->with('roles:id,name,guard_name')
+            ->with(['roles:id,name,guard_name', 'permissions:id,name,guard_name'])
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
@@ -37,6 +38,7 @@ class UserManagementController extends Controller
                 'email' => $user->email,
                 'matric_no' => $user->matric_no,
                 'roles' => $user->roles->pluck('name')->values(),
+                'permissions' => $user->permissions->pluck('name')->values(),
                 'email_verified' => $user->email_verified_at !== null,
                 'created_at' => $user->created_at?->toDateString(),
             ]);
@@ -44,6 +46,7 @@ class UserManagementController extends Controller
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,
             'roles' => Role::query()->where('guard_name', 'web')->orderBy('name')->pluck('name'),
+            'permissions' => Permission::query()->where('guard_name', 'web')->orderBy('name')->pluck('name'),
             'filters' => ['search' => $search, 'role' => $roleFilter],
         ]);
     }
@@ -59,6 +62,8 @@ class UserManagementController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'roles' => ['required', 'array', 'min:1'],
             'roles.*' => ['string', 'distinct', Rule::exists('roles', 'name')->where('guard_name', 'web')],
+            'permissions' => ['sometimes', 'array'],
+            'permissions.*' => ['string', 'distinct', Rule::exists('permissions', 'name')->where('guard_name', 'web')],
         ]);
 
         $user = User::create([
@@ -68,6 +73,7 @@ class UserManagementController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
         $user->syncRoles($validated['roles']);
+        $user->syncPermissions($validated['permissions'] ?? []);
 
         return to_route('admin.users.index');
     }
@@ -82,9 +88,13 @@ class UserManagementController extends Controller
             'matric_no' => ['nullable', 'string', 'max:50', Rule::unique('users', 'matric_no')->ignore($user->id)],
             'roles' => ['required', 'array', 'min:1'],
             'roles.*' => ['string', 'distinct', Rule::exists('roles', 'name')->where('guard_name', 'web')],
+            'permissions' => ['sometimes', 'array'],
+            'permissions.*' => ['string', 'distinct', Rule::exists('permissions', 'name')->where('guard_name', 'web')],
         ]);
 
-        if ($user->is($request->user()) && $user->can('manage users') && ! $this->rolesCanManageUsers($validated['roles'])) {
+        $directPermissions = $validated['permissions'] ?? $user->getDirectPermissions()->pluck('name')->all();
+
+        if ($user->is($request->user()) && $user->can('manage users') && ! $this->rolesCanManageUsers($validated['roles']) && ! in_array('manage users', $directPermissions, true)) {
             throw ValidationException::withMessages(['roles' => 'Keep a role with user-management access on your account.']);
         }
 
@@ -94,6 +104,7 @@ class UserManagementController extends Controller
             'matric_no' => $validated['matric_no'] ?? null,
         ]);
         $user->syncRoles($validated['roles']);
+        $user->syncPermissions($directPermissions);
 
         return back();
     }

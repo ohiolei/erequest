@@ -107,7 +107,7 @@ const isParentActive = (item) => {
                                 <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6L21 9 12 3zm0 2.18l6 3.27-6 3.27-6-3.27 6-3.27zM5 12.82l5 2.73v5.18l-5-2.73v-5.18zm14 0v5.18l-5 2.73v-5.18l5-2.73z"/>
                             </svg>
                         </div>
-                        <span class="text-lg font-semibold text-gray-800 dark:text-gray-100">TASFUED</span>
+                        <span class="text-lg font-semibold text-gray-800 dark:text-gray-100">Tasfued E Request</span>
                     </div>
                     <button
                         type="button"
@@ -165,6 +165,20 @@ const isParentActive = (item) => {
                 <div class="p-4">
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Module Navigation</p>
                     <nav class="space-y-0.5">
+                        <Link
+                            :href="route('dashboard')"
+                            :class="[
+                                'flex items-center gap-2.5 px-3 py-2.5 text-sm rounded-md transition',
+                                isActive('dashboard')
+                                    ? 'bg-purple-50 text-purple-700 font-medium dark:bg-purple-900/40 dark:text-purple-200'
+                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
+                            ]"
+                        >
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+                            </svg>
+                            Dashboard
+                        </Link>
                         <Link
                             v-if="canManageUsers"
                             :href="route('admin.users.index')"
@@ -279,7 +293,7 @@ const isParentActive = (item) => {
 
             <!-- Main Content -->
             <div class="flex flex-1 flex-col min-h-0 overflow-hidden bg-gray-100 dark:bg-gray-900">
-                <main class="flex-1 overflow-y-auto">
+                <main class="flex-1 overflow-y-auto px-3 sm:px-4">
                     <slot />
                 </main>
 

@@ -154,7 +154,7 @@ const deletePermission = (permission) => {
     <Head title="Roles & Permissions" />
 
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
+        <div class="mx-auto max-w-7xl space-y-6 py-4 sm:py-6">
             <header class="flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-300">Administration</p>

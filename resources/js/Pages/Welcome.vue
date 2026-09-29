@@ -49,7 +49,7 @@ const stats = ref([
 </script>
 
 <template>
-    <Head title="TASFUED - Premier University of Education" />
+    <Head title="Tasfued E Request" />
 
     <div class="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500 selection:text-white relative overflow-hidden">
         
@@ -67,8 +67,8 @@ const stats = ref([
                         T
                     </div>
                     <div>
-                        <span class="text-xl font-bold tracking-tight text-white block leading-none">TASFUED</span>
-                        <span class="text-[10px] tracking-widest uppercase text-emerald-400 font-semibold">IJEBU-ODE</span>
+                        <span class="text-lg font-bold text-white block leading-tight">Tasfued E Request</span>
+                        <span class="text-[10px] uppercase text-emerald-400 font-semibold">TASFUED PORTAL</span>
                     </div>
                 </div>
 

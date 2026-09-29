@@ -34,6 +34,8 @@ class UserManagementTest extends TestCase
                 ->has('users.data', 1)
                 ->where('users.data.0.name', 'Jamie Student')
                 ->where('users.data.0.roles.0', 'student')
+                ->has('users.data.0.permissions', 0)
+                ->has('permissions', 8)
                 ->where('filters.search', 'Jamie'));
     }
 
@@ -60,12 +62,14 @@ class UserManagementTest extends TestCase
                 'password' => 'temporary-password',
                 'password_confirmation' => 'temporary-password',
                 'roles' => ['student'],
+                'permissions' => ['view all requests'],
             ])
             ->assertRedirect(route('admin.users.index'));
 
         $user = User::where('email', 'new.student@example.com')->firstOrFail();
         $this->assertSame('TASFUED/2026/100', $user->matric_no);
         $this->assertTrue($user->hasRole('student'));
+        $this->assertTrue($user->hasDirectPermission('view all requests'));
     }
 
     public function test_admin_can_update_user_details_and_roles(): void
@@ -81,6 +85,7 @@ class UserManagementTest extends TestCase
                 'email' => 'updated.student@example.com',
                 'matric_no' => 'tasfued/2026/101',
                 'roles' => ['admin'],
+                'permissions' => ['view all requests'],
             ])
             ->assertRedirect();
 
@@ -89,6 +94,7 @@ class UserManagementTest extends TestCase
         $this->assertSame('updated.student@example.com', $student->email);
         $this->assertSame('TASFUED/2026/101', $student->matric_no);
         $this->assertTrue($student->hasRole('admin'));
+        $this->assertTrue($student->hasDirectPermission('view all requests'));
     }
 
     public function test_admin_cannot_delete_their_own_account(): void
