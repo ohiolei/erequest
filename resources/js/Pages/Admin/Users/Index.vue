@@ -156,7 +156,7 @@ const paginationLabel = (label) => label
                                 {{ user.roles.length }} {{ user.roles.length === 1 ? 'role' : 'roles' }}
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-300">
-                                {{ user.permissions.length }} {{ user.permissions.length === 1 ? 'direct' : 'direct' }}
+                                {{ user.permissions.length }} direct {{ user.permissions.length === 1 ? 'permission' : 'permissions' }}
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-300">{{ user.created_at }}</td>
                             <td class="whitespace-nowrap px-4 py-3">
