@@ -34,7 +34,7 @@ class RoleManagementTest extends TestCase
                 ->component('Admin/Roles/Index')
                 ->has('roles.data', 2)
                 ->has('permissions', 8)
-                ->has('permissionRecords.data', 8));
+                ->has('permissionRecords.data', 5));
     }
 
     public function test_roles_and_permissions_have_independent_pagination(): void
@@ -52,9 +52,9 @@ class RoleManagementTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->where('roles.current_page', 2)
-                ->has('roles.data', 3)
+                ->has('roles.data', 5)
                 ->where('permissionRecords.current_page', 2)
-                ->has('permissionRecords.data', 9));
+                ->has('permissionRecords.data', 5));
     }
 
     public function test_student_cannot_manage_roles(): void

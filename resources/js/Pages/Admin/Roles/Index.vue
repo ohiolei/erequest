@@ -187,23 +187,28 @@ const paginationLabel = (label) => label
                         </tbody>
                     </table>
                 </div>
-                <nav v-if="roles.links.length > 3" aria-label="Role list pages" class="flex flex-wrap justify-end gap-1">
-                    <Link
-                        v-for="link in roles.links"
-                        :key="`roles-${link.label}`"
-                        :href="link.url ?? '#'"
-                        :aria-current="link.active ? 'page' : undefined"
-                        preserve-state
-                        preserve-scroll
-                        :class="[
-                            'min-w-9 rounded border px-3 py-2 text-center text-sm',
-                            link.active ? 'border-purple-700 bg-purple-700 text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800',
-                            !link.url ? 'pointer-events-none opacity-40' : '',
-                        ]"
-                    >
-                        {{ paginationLabel(link.label) }}
-                    </Link>
-                </nav>
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Showing {{ roles.from ?? 0 }}–{{ roles.to ?? 0 }} of {{ roles.total }} roles
+                    </p>
+                    <nav aria-label="Role list pages" class="flex flex-wrap justify-end gap-1">
+                        <Link
+                            v-for="link in roles.links"
+                            :key="`roles-${link.label}`"
+                            :href="link.url ?? '#'"
+                            :aria-current="link.active ? 'page' : undefined"
+                            preserve-state
+                            preserve-scroll
+                            :class="[
+                                'min-w-9 rounded border px-3 py-2 text-center text-sm',
+                                link.active ? 'border-purple-700 bg-purple-700 text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800',
+                                !link.url ? 'pointer-events-none opacity-40' : '',
+                            ]"
+                        >
+                            {{ paginationLabel(link.label) }}
+                        </Link>
+                    </nav>
+                </div>
             </section>
 
             <section id="permissions-panel" role="tabpanel" aria-labelledby="permissions-tab" v-show="activeTab === 'permissions'" class="space-y-5">
@@ -261,23 +266,28 @@ const paginationLabel = (label) => label
                         </tbody>
                     </table>
                 </div>
-                <nav v-if="permissionRecords.links.length > 3" aria-label="Permission list pages" class="flex flex-wrap justify-end gap-1">
-                    <Link
-                        v-for="link in permissionRecords.links"
-                        :key="`permissions-${link.label}`"
-                        :href="link.url ?? '#'"
-                        :aria-current="link.active ? 'page' : undefined"
-                        preserve-state
-                        preserve-scroll
-                        :class="[
-                            'min-w-9 rounded border px-3 py-2 text-center text-sm',
-                            link.active ? 'border-purple-700 bg-purple-700 text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800',
-                            !link.url ? 'pointer-events-none opacity-40' : '',
-                        ]"
-                    >
-                        {{ paginationLabel(link.label) }}
-                    </Link>
-                </nav>
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Showing {{ permissionRecords.from ?? 0 }}–{{ permissionRecords.to ?? 0 }} of {{ permissionRecords.total }} permissions
+                    </p>
+                    <nav aria-label="Permission list pages" class="flex flex-wrap justify-end gap-1">
+                        <Link
+                            v-for="link in permissionRecords.links"
+                            :key="`permissions-${link.label}`"
+                            :href="link.url ?? '#'"
+                            :aria-current="link.active ? 'page' : undefined"
+                            preserve-state
+                            preserve-scroll
+                            :class="[
+                                'min-w-9 rounded border px-3 py-2 text-center text-sm',
+                                link.active ? 'border-purple-700 bg-purple-700 text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800',
+                                !link.url ? 'pointer-events-none opacity-40' : '',
+                            ]"
+                        >
+                            {{ paginationLabel(link.label) }}
+                        </Link>
+                    </nav>
+                </div>
             </section>
         </div>
 

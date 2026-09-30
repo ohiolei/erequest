@@ -20,11 +20,7 @@ defineProps({
         <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
             <div class="max-w-7xl mx-auto flex items-center h-14 px-4 sm:px-6">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6L21 9 12 3zm0 2.18l6 3.27-6 3.27-6-3.27 6-3.27zM5 12.82l5 2.73v5.18l-5-2.73v-5.18zm14 0v5.18l-5 2.73v-5.18l5-2.73z"/>
-                        </svg>
-                    </div>
+                    <img src="/assets/images/logo1.png" alt="" class="h-8 w-8 shrink-0 object-contain" />
                     <span class="text-lg font-semibold text-gray-800 dark:text-gray-100">E-REQUEST</span>
                 </div>
             </div>

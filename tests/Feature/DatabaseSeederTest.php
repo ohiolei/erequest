@@ -22,11 +22,12 @@ class DatabaseSeederTest extends TestCase
         $this->assertTrue($student->hasRole('student'));
         $this->assertTrue($student->can('create requests'));
         $this->assertFalse($student->can('manage users'));
+        $this->assertSame(6, User::role('student')->count());
         $this->assertDatabaseCount('menu_items', 5);
 
         $this->seed();
 
-        $this->assertDatabaseCount('users', 2);
+        $this->assertDatabaseCount('users', 9);
         $this->assertDatabaseCount('menu_items', 5);
     }
 }

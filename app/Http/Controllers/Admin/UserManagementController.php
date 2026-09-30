@@ -30,7 +30,7 @@ class UserManagementController extends Controller
             }))
             ->when($roleFilter !== '', fn ($query) => $query->whereHas('roles', fn ($roles) => $roles->where('roles.name', $roleFilter)->where('roles.guard_name', 'web')))
             ->orderBy('name')
-            ->paginate(15)
+            ->paginate(5, ['*'], 'users_page')
             ->withQueryString()
             ->through(fn (User $user) => [
                 'id' => $user->id,

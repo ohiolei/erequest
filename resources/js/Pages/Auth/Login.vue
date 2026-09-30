@@ -38,9 +38,7 @@ const submit = () => {
             <!-- Brand Logo Header -->
             <div class="text-center mb-8">
                 <Link class="inline-flex items-center gap-3 group" href="/">
-                    <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-bold text-slate-950 shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-                        T
-                    </div>
+                    <img src="/assets/images/logo1.png" alt="" class="h-12 w-12 shrink-0 object-contain transition-transform group-hover:scale-105" />
                     <div class="text-left">
                         <span class="text-2xl font-bold tracking-tight text-white block leading-none">TASFUED</span>
                         <span class="text-[10px] tracking-widest uppercase text-emerald-400 font-semibold">PORTAL LOGIN</span>

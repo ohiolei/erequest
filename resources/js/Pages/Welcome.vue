@@ -63,9 +63,7 @@ const stats = ref([
             <!-- Navigation Bar -->
             <header class="flex items-center justify-between py-8 border-b border-slate-800/80">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-bold text-slate-950 shadow-lg shadow-emerald-500/20">
-                        T
-                    </div>
+                    <img src="/assets/images/logo1.png" alt="" class="h-10 w-10 shrink-0 object-contain" />
                     <div>
                         <span class="text-lg font-bold text-white block leading-tight">Tasfued E Request</span>
                         <span class="text-[10px] uppercase text-emerald-400 font-semibold">TASFUED PORTAL</span>

@@ -41,6 +41,21 @@ class UserManagementTest extends TestCase
                 ->where('filters.search', 'Jamie'));
     }
 
+    public function test_user_list_uses_server_side_pagination(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        User::factory()->count(7)->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index', ['users_page' => 2]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('users.current_page', 2)
+                ->has('users.data', 3));
+    }
+
     public function test_student_cannot_manage_users(): void
     {
         $student = User::factory()->create();
