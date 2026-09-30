@@ -1,7 +1,15 @@
 <script setup>
-import { reactive, ref, watch } from 'vue';
-import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { Head, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import Dropdown from '@/Components/Dropdown.vue';
+import AttachPermissionsModal from './Partials/AttachPermissionsModal.vue';
+import CreateRoleModal from './Partials/CreateRoleModal.vue';
+import DeleteRoleModal from './Partials/DeleteRoleModal.vue';
+import EditRoleModal from './Partials/EditRoleModal.vue';
+import CreatePermissionModal from './Partials/CreatePermissionModal.vue';
+import DeletePermissionModal from './Partials/DeletePermissionModal.vue';
+import EditPermissionModal from './Partials/EditPermissionModal.vue';
 
 const props = defineProps({
     roles: {
@@ -21,132 +29,42 @@ const props = defineProps({
 const page = usePage();
 const statusMessage = ref('');
 const activeTab = ref('roles');
-const createForm = useForm({
-    name: '',
-    permissions: [],
-});
-const createPermissionForm = useForm({ name: '' });
-const roleForms = reactive({});
-const permissionForms = reactive({});
+const activeModal = ref(null);
+const selectedRole = ref(null);
+const activePermissionModal = ref(null);
+const selectedPermission = ref(null);
 
-watch(
-    () => props.roles,
-    (roles) => {
-        roles.forEach((role) => {
-            const values = {
-                name: role.name,
-                permissions: [...role.permissions],
-            };
-
-            if (!roleForms[role.id]) {
-                roleForms[role.id] = useForm(values);
-                return;
-            }
-
-            Object.assign(roleForms[role.id], values);
-            roleForms[role.id].defaults(values);
-        });
-    },
-    { immediate: true },
-);
-
-watch(
-    () => props.permissionRecords,
-    (permissions) => {
-        permissions.forEach((permission) => {
-            const values = { name: permission.name };
-
-            if (!permissionForms[permission.id]) {
-                permissionForms[permission.id] = useForm(values);
-                return;
-            }
-
-            Object.assign(permissionForms[permission.id], values);
-            permissionForms[permission.id].defaults(values);
-        });
-    },
-    { immediate: true },
-);
-
-const labelFor = (permission) => permission
-    .split(' ')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-
-const createRole = () => {
-    statusMessage.value = '';
-    createForm.post(route('admin.roles.store'), {
-        preserveScroll: true,
-        onSuccess: () => {
-            createForm.reset();
-            statusMessage.value = 'Role created.';
-        },
-    });
+const openRoleModal = (modal, role = null) => {
+    selectedRole.value = role;
+    activeModal.value = modal;
 };
 
-const saveRole = (role) => {
-    const form = roleForms[role.id];
-    statusMessage.value = '';
-    form.patch(route('admin.roles.update', role.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            form.defaults();
-            form.reset();
-            statusMessage.value = 'Role updated.';
-        },
-    });
+const openActionModal = (event, modal, role) => {
+    event.currentTarget.closest('details').open = false;
+    openRoleModal(modal, role);
 };
 
-const deleteRole = (role) => {
-    if (!window.confirm(`Delete the ${role.name} role?`)) {
-        return;
-    }
-
-    statusMessage.value = '';
-    router.delete(route('admin.roles.destroy', role.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            statusMessage.value = 'Role deleted.';
-        },
-    });
+const closeModal = () => {
+    activeModal.value = null;
+    selectedRole.value = null;
 };
 
-const createPermission = () => {
-    statusMessage.value = '';
-    createPermissionForm.post(route('admin.permissions.store'), {
-        preserveScroll: true,
-        onSuccess: () => {
-            createPermissionForm.reset();
-            statusMessage.value = 'Permission created.';
-        },
-    });
+const showSavedMessage = (message) => {
+    statusMessage.value = message;
 };
 
-const savePermission = (permission) => {
-    const form = permissionForms[permission.id];
-    statusMessage.value = '';
-    form.patch(route('admin.permissions.update', permission.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            form.defaults();
-            form.reset();
-            statusMessage.value = 'Permission updated.';
-        },
-    });
+const openPermissionModal = (modal, permission = null) => {
+    selectedPermission.value = permission;
+    activePermissionModal.value = modal;
 };
 
-const deletePermission = (permission) => {
-    if (!window.confirm(`Delete the ${permission.name} permission?`)) {
-        return;
-    }
+const closePermissionModal = () => {
+    activePermissionModal.value = null;
+    selectedPermission.value = null;
+};
 
-    statusMessage.value = '';
-    router.delete(route('admin.permissions.destroy', permission.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            statusMessage.value = 'Permission deleted.';
-        },
-    });
+const permissionSaved = (message) => {
+    statusMessage.value = message;
 };
 </script>
 
@@ -199,34 +117,15 @@ const deletePermission = (permission) => {
             </div>
 
             <section id="roles-panel" role="tabpanel" aria-labelledby="roles-tab" v-show="activeTab === 'roles'" class="space-y-5">
-                <form @submit.prevent="createRole" class="flex flex-wrap items-end gap-3 border-b border-gray-200 pb-5 dark:border-gray-700">
-                    <div class="min-w-56 flex-1">
-                        <label for="new-role-name" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">New role</label>
-                        <input
-                            id="new-role-name"
-                            v-model="createForm.name"
-                            type="text"
-                            required
-                            maxlength="50"
-                            placeholder="request-reviewer"
-                            class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                        />
-                        <p v-if="createForm.errors.name" class="mt-1 text-sm text-rose-600">{{ createForm.errors.name }}</p>
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-4 dark:border-gray-700">
+                    <div>
+                        <h2 class="text-base font-semibold text-gray-900 dark:text-white">Roles</h2>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Edit role details, attach permissions, or remove unused roles.</p>
                     </div>
-                    <button type="submit" :disabled="createForm.processing" class="rounded-md bg-purple-700 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-800 disabled:opacity-60">
-                        Create role
+                    <button type="button" class="rounded-md bg-purple-700 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-800" @click="openRoleModal('create')">
+                        Add role
                     </button>
-                    <fieldset class="w-full">
-                        <legend class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Initial permissions</legend>
-                        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                            <label v-for="permission in permissions" :key="permission" class="flex items-center gap-2 rounded border border-gray-200 px-3 py-2 text-sm text-gray-700 dark:border-gray-700 dark:text-gray-300">
-                                <input v-model="createForm.permissions" type="checkbox" :value="permission" class="rounded border-gray-300 text-purple-700 focus:ring-purple-600" />
-                                <span>{{ labelFor(permission) }}</span>
-                            </label>
-                        </div>
-                    </fieldset>
-                    <p v-if="createForm.errors.permissions" class="w-full text-sm text-rose-600">{{ createForm.errors.permissions }}</p>
-                </form>
+                </div>
 
                 <div class="overflow-x-auto rounded-md border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                     <table class="w-full min-w-[850px] divide-y divide-gray-200 text-left text-sm dark:divide-gray-700">
@@ -234,62 +133,48 @@ const deletePermission = (permission) => {
                             <tr>
                                 <th scope="col" class="px-4 py-3">Role</th>
                                 <th scope="col" class="px-4 py-3">Accounts</th>
-                                <th scope="col" class="px-4 py-3">Permissions</th>
+                                <th scope="col" class="px-4 py-3">Attached permissions</th>
                                 <th scope="col" class="px-4 py-3 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             <tr v-for="role in roles" :key="role.id" class="align-top">
-                                <td class="w-56 px-4 py-3">
-                                    <label :for="`role-name-${role.id}`" class="sr-only">Role name</label>
-                                    <input
-                                        :id="`role-name-${role.id}`"
-                                        v-model="roleForms[role.id].name"
-                                        type="text"
-                                        required
-                                        maxlength="50"
-                                        :readonly="role.name === 'admin'"
-                                        class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 read-only:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:read-only:bg-gray-900"
-                                    />
-                                    <p v-if="roleForms[role.id].errors.name" class="mt-1 text-xs text-rose-600">{{ roleForms[role.id].errors.name }}</p>
+                                <td class="whitespace-nowrap px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                                    {{ role.name }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-300">{{ role.users_count }}</td>
                                 <td class="px-4 py-3">
-                                    <details class="group">
-                                        <summary class="w-fit cursor-pointer select-none rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                                            {{ roleForms[role.id].permissions.length }} selected
-                                        </summary>
-                                        <fieldset class="mt-3 grid gap-2 sm:grid-cols-2">
-                                            <legend class="sr-only">Role permissions</legend>
-                                            <label v-for="permission in permissions" :key="permission" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                                                <input
-                                                    v-model="roleForms[role.id].permissions"
-                                                    type="checkbox"
-                                                    :value="permission"
-                                                    :disabled="role.name === 'admin' && permission === 'manage roles'"
-                                                    class="rounded border-gray-300 text-purple-700 focus:ring-purple-600"
-                                                />
-                                                <span>{{ labelFor(permission) }}</span>
-                                            </label>
-                                        </fieldset>
-                                        <p v-if="roleForms[role.id].errors.permissions" class="mt-2 text-xs text-rose-600">{{ roleForms[role.id].errors.permissions }}</p>
-                                    </details>
+                                    <span class="text-gray-600 dark:text-gray-300">{{ role.permissions.length }}</span>
+                                    <span class="ml-1 text-gray-500 dark:text-gray-400">{{ role.permissions.length === 1 ? 'permission' : 'permissions' }}</span>
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-right">
-                                    <div class="inline-flex items-center gap-2">
-                                        <button type="button" :disabled="roleForms[role.id].processing" class="rounded-md bg-purple-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-purple-800 disabled:opacity-60" @click="saveRole(role)">
-                                            Save
-                                        </button>
-                                        <button
-                                            type="button"
-                                            :disabled="role.name === 'admin' || role.users_count > 0"
-                                            :title="role.name === 'admin' ? 'The admin role is protected' : role.users_count ? 'Remove assigned accounts before deleting this role' : 'Delete role'"
-                                            class="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-600 dark:text-rose-300 dark:hover:bg-rose-950/30"
-                                            @click="deleteRole(role)"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
+                                    <Dropdown align="right" width="48" content-classes="bg-white py-1 dark:bg-gray-800">
+                                        <template #trigger>
+                                            <button type="button" class="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                                                Actions
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+                                                </svg>
+                                            </button>
+                                        </template>
+                                        <template #content>
+                                            <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" @click="openRoleModal('edit', role)">
+                                                Edit role
+                                            </button>
+                                            <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" @click="openRoleModal('permissions', role)">
+                                                Attach permissions
+                                            </button>
+                                            <button
+                                                type="button"
+                                                :disabled="role.name === 'admin' || role.users_count > 0"
+                                                :title="role.name === 'admin' ? 'The admin role is protected' : role.users_count ? 'Remove assigned accounts before deleting this role' : 'Delete role'"
+                                                class="block w-full px-4 py-2 text-left text-sm text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-rose-300 dark:hover:bg-rose-950/30"
+                                                @click="openRoleModal('delete', role)"
+                                            >
+                                                Delete role
+                                            </button>
+                                        </template>
+                                    </Dropdown>
                                 </td>
                             </tr>
                             <tr v-if="roles.length === 0">
@@ -301,24 +186,15 @@ const deletePermission = (permission) => {
             </section>
 
             <section id="permissions-panel" role="tabpanel" aria-labelledby="permissions-tab" v-show="activeTab === 'permissions'" class="space-y-5">
-                <form @submit.prevent="createPermission" class="flex flex-wrap items-end gap-3 border-b border-gray-200 pb-5 dark:border-gray-700">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-4 dark:border-gray-700">
                     <div class="min-w-56 flex-1">
-                        <label for="new-permission-name" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">New permission</label>
-                        <input
-                            id="new-permission-name"
-                            v-model="createPermissionForm.name"
-                            type="text"
-                            required
-                            maxlength="100"
-                            placeholder="approve requests"
-                            class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                        />
-                        <p v-if="createPermissionForm.errors.name" class="mt-1 text-sm text-rose-600">{{ createPermissionForm.errors.name }}</p>
+                        <h2 class="text-base font-semibold text-gray-900 dark:text-white">Permissions</h2>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Create and manage access permissions.</p>
                     </div>
-                    <button type="submit" :disabled="createPermissionForm.processing" class="rounded-md bg-purple-700 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-800 disabled:opacity-60">
-                        Create permission
+                    <button type="button" class="rounded-md bg-purple-700 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-800" @click="openPermissionModal('create')">
+                        Add permission
                     </button>
-                </form>
+                </div>
 
                 <div class="overflow-x-auto rounded-md border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                     <table class="w-full min-w-[650px] divide-y divide-gray-200 text-left text-sm dark:divide-gray-700">
@@ -331,37 +207,31 @@ const deletePermission = (permission) => {
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             <tr v-for="permission in permissionRecords" :key="permission.id">
-                                <td class="px-4 py-3">
-                                    <label :for="`permission-name-${permission.id}`" class="sr-only">Permission name</label>
-                                    <input
-                                        :id="`permission-name-${permission.id}`"
-                                        v-model="permissionForms[permission.id].name"
-                                        type="text"
-                                        required
-                                        maxlength="100"
-                                        :readonly="permission.name === 'manage roles'"
-                                        class="w-full max-w-md rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 read-only:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:read-only:bg-gray-900"
-                                    />
-                                    <p v-if="permissionForms[permission.id].errors.name" class="mt-1 text-xs text-rose-600">{{ permissionForms[permission.id].errors.name }}</p>
+                                <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                                    {{ permission.name }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-300">
                                     {{ permission.roles_count }} roles · {{ permission.users_count }} users
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-right">
-                                    <div class="inline-flex items-center gap-2">
-                                        <button type="button" :disabled="permissionForms[permission.id].processing" class="rounded-md bg-purple-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-purple-800 disabled:opacity-60" @click="savePermission(permission)">
-                                            Save
-                                        </button>
-                                        <button
-                                            type="button"
-                                            :disabled="permission.name === 'manage roles' || permission.roles_count > 0 || permission.users_count > 0"
-                                            :title="permission.name === 'manage roles' ? 'This permission is protected' : permission.roles_count || permission.users_count ? 'Remove assignments before deleting' : 'Delete permission'"
-                                            class="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-600 dark:text-rose-300 dark:hover:bg-rose-950/30"
-                                            @click="deletePermission(permission)"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
+                                    <Dropdown align="right" width="48" content-classes="bg-white py-1 dark:bg-gray-800">
+                                        <template #trigger>
+                                            <button type="button" class="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                                                Actions
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+                                                </svg>
+                                            </button>
+                                        </template>
+                                        <template #content>
+                                            <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" @click="openPermissionModal('edit', permission)">
+                                                Edit permission
+                                            </button>
+                                            <button type="button" class="block w-full px-4 py-2 text-left text-sm text-rose-700 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/30" @click="openPermissionModal('delete', permission)">
+                                                Delete permission
+                                            </button>
+                                        </template>
+                                    </Dropdown>
                                 </td>
                             </tr>
                             <tr v-if="permissionRecords.length === 0">
@@ -372,5 +242,48 @@ const deletePermission = (permission) => {
                 </div>
             </section>
         </div>
+
+        <CreateRoleModal
+            :show="activeModal === 'create'"
+            :permissions="permissions"
+            @close="closeModal"
+            @saved="showSavedMessage"
+        />
+        <EditRoleModal
+            :show="activeModal === 'edit'"
+            :role="selectedRole"
+            @close="closeModal"
+            @saved="showSavedMessage"
+        />
+        <AttachPermissionsModal
+            :show="activeModal === 'permissions'"
+            :role="selectedRole"
+            :permissions="permissions"
+            @close="closeModal"
+            @saved="showSavedMessage"
+        />
+        <DeleteRoleModal
+            :show="activeModal === 'delete'"
+            :role="selectedRole"
+            @close="closeModal"
+            @saved="showSavedMessage"
+        />
+        <CreatePermissionModal
+            :show="activePermissionModal === 'create'"
+            @close="closePermissionModal"
+            @saved="permissionSaved"
+        />
+        <EditPermissionModal
+            :show="activePermissionModal === 'edit'"
+            :permission="selectedPermission"
+            @close="closePermissionModal"
+            @saved="permissionSaved"
+        />
+        <DeletePermissionModal
+            :show="activePermissionModal === 'delete'"
+            :permission="selectedPermission"
+            @close="closePermissionModal"
+            @saved="permissionSaved"
+        />
     </AuthenticatedLayout>
 </template>

@@ -28,16 +28,19 @@ class RolePermissionSeeder extends Seeder
             Permission::findOrCreate($permission, 'web');
         }
 
-        $admin = Role::findOrCreate('admin', 'web');
-        $student = Role::findOrCreate('student', 'web');
+        $roles = [
+            'admin' => $permissions,
+            'student' => [
+                'view dashboard',
+                'create requests',
+                'view own requests',
+                'update own requests',
+            ],
+        ];
 
-        $admin->syncPermissions($permissions);
-        $student->syncPermissions([
-            'view dashboard',
-            'create requests',
-            'view own requests',
-            'update own requests',
-        ]);
+        foreach ($roles as $name => $rolePermissions) {
+            Role::findOrCreate($name, 'web')->syncPermissions($rolePermissions);
+        }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }

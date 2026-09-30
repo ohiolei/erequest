@@ -49,6 +49,8 @@ Route::middleware(['auth', 'can:manage users'])
         Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
         Route::post('/users', [UserManagementController::class, 'store'])->name('users.store');
         Route::patch('/users/{user}', [UserManagementController::class, 'update'])->name('users.update');
+        Route::patch('/users/{user}/roles', [UserManagementController::class, 'updateRoles'])->name('users.roles.update');
+        Route::patch('/users/{user}/permissions', [UserManagementController::class, 'updatePermissions'])->name('users.permissions.update');
         Route::delete('/users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
     });
 

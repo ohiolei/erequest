@@ -86,25 +86,46 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'matric_no' => ['nullable', 'string', 'max:50', Rule::unique('users', 'matric_no')->ignore($user->id)],
-            'roles' => ['required', 'array', 'min:1'],
-            'roles.*' => ['string', 'distinct', Rule::exists('roles', 'name')->where('guard_name', 'web')],
-            'permissions' => ['sometimes', 'array'],
-            'permissions.*' => ['string', 'distinct', Rule::exists('permissions', 'name')->where('guard_name', 'web')],
         ]);
-
-        $directPermissions = $validated['permissions'] ?? $user->getDirectPermissions()->pluck('name')->all();
-
-        if ($user->is($request->user()) && $user->can('manage users') && ! $this->rolesCanManageUsers($validated['roles']) && ! in_array('manage users', $directPermissions, true)) {
-            throw ValidationException::withMessages(['roles' => 'Keep a role with user-management access on your account.']);
-        }
 
         $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'matric_no' => $validated['matric_no'] ?? null,
         ]);
+
+        return back();
+    }
+
+    public function updateRoles(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'roles' => ['required', 'array', 'min:1'],
+            'roles.*' => ['string', 'distinct', Rule::exists('roles', 'name')->where('guard_name', 'web')],
+        ]);
+
+        if ($user->is($request->user()) && $user->can('manage users') && ! $this->rolesCanManageUsers($validated['roles']) && ! $user->hasDirectPermission('manage users')) {
+            throw ValidationException::withMessages(['roles' => 'Keep a role or direct permission with user-management access on your account.']);
+        }
+
         $user->syncRoles($validated['roles']);
-        $user->syncPermissions($directPermissions);
+
+        return back();
+    }
+
+    public function updatePermissions(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'permissions' => ['present', 'array'],
+            'permissions.*' => ['string', 'distinct', Rule::exists('permissions', 'name')->where('guard_name', 'web')],
+        ]);
+
+        $roles = $user->roles()->pluck('name')->all();
+        if ($user->is($request->user()) && $user->can('manage users') && ! $this->rolesCanManageUsers($roles) && ! in_array('manage users', $validated['permissions'], true)) {
+            throw ValidationException::withMessages(['permissions' => 'Keep a role or direct permission with user-management access on your account.']);
+        }
+
+        $user->syncPermissions($validated['permissions']);
 
         return back();
     }
@@ -126,11 +147,19 @@ class UserManagementController extends Controller
 
     private function normalizeUserInput(Request $request): void
     {
-        $request->merge([
-            'name' => trim((string) $request->input('name')),
-            'email' => strtolower(trim((string) $request->input('email'))),
-            'matric_no' => $request->filled('matric_no') ? strtoupper(trim((string) $request->input('matric_no'))) : null,
-        ]);
+        $normalized = [];
+
+        if ($request->exists('name')) {
+            $normalized['name'] = trim((string) $request->input('name'));
+        }
+        if ($request->exists('email')) {
+            $normalized['email'] = strtolower(trim((string) $request->input('email')));
+        }
+        if ($request->exists('matric_no')) {
+            $normalized['matric_no'] = $request->filled('matric_no') ? strtoupper(trim((string) $request->input('matric_no'))) : null;
+        }
+
+        $request->merge($normalized);
     }
 
     private function rolesCanManageUsers(array $roles): bool

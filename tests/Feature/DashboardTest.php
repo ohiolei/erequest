@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Database\Seeders\MenuSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,18 +17,23 @@ class DashboardTest extends TestCase
         parent::setUp();
 
         $this->seed(RolePermissionSeeder::class);
+        $this->seed(MenuSeeder::class);
     }
 
     public function test_dashboard_is_available_to_regular_users(): void
     {
         $user = User::factory()->create();
+        $user->assignRole('student');
 
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Dashboard')
-                ->where('isAdmin', false));
+                ->where('isAdmin', false)
+                ->has('sidebar_menu', 2)
+                ->where('sidebar_menu.0.key', 'dashboard')
+                ->where('sidebar_menu.1.key', 'profile'));
     }
 
     public function test_dashboard_identifies_administrators(): void
@@ -40,6 +46,9 @@ class DashboardTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Dashboard')
-                ->where('isAdmin', true));
+                ->where('isAdmin', true)
+                ->has('sidebar_menu', 3)
+                ->where('sidebar_menu.1.key', 'administration')
+                ->has('sidebar_menu.1.children', 2));
     }
 }

@@ -72,7 +72,7 @@ class UserManagementTest extends TestCase
         $this->assertTrue($user->hasDirectPermission('view all requests'));
     }
 
-    public function test_admin_can_update_user_details_and_roles(): void
+    public function test_admin_can_update_user_profile_without_resending_access(): void
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
@@ -84,8 +84,6 @@ class UserManagementTest extends TestCase
                 'name' => 'Updated Student',
                 'email' => 'updated.student@example.com',
                 'matric_no' => 'tasfued/2026/101',
-                'roles' => ['admin'],
-                'permissions' => ['view all requests'],
             ])
             ->assertRedirect();
 
@@ -93,8 +91,44 @@ class UserManagementTest extends TestCase
         $this->assertSame('Updated Student', $student->name);
         $this->assertSame('updated.student@example.com', $student->email);
         $this->assertSame('TASFUED/2026/101', $student->matric_no);
+        $this->assertTrue($student->hasRole('student'));
+    }
+
+    public function test_admin_can_assign_roles_and_direct_permissions_separately(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+        $student = User::factory()->create();
+        $student->assignRole('student');
+
+        $this->actingAs($admin)
+            ->patch(route('admin.users.roles.update', $student), ['roles' => ['admin']])
+            ->assertRedirect();
+
+        $this->patch(route('admin.users.permissions.update', $student), ['permissions' => ['view all requests']])
+            ->assertRedirect();
+
+        $student->refresh();
         $this->assertTrue($student->hasRole('admin'));
         $this->assertTrue($student->hasDirectPermission('view all requests'));
+    }
+
+    public function test_admin_cannot_remove_own_last_user_management_access(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $this->actingAs($admin)
+            ->patch(route('admin.users.roles.update', $admin), ['roles' => ['student']])
+            ->assertSessionHasErrors('roles');
+
+        $directManager = User::factory()->create();
+        $directManager->assignRole('student');
+        $directManager->givePermissionTo('manage users');
+
+        $this->actingAs($directManager)
+            ->patch(route('admin.users.permissions.update', $directManager), ['permissions' => []])
+            ->assertSessionHasErrors('permissions');
     }
 
     public function test_admin_cannot_delete_their_own_account(): void

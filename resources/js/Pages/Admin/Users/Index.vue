@@ -1,7 +1,13 @@
 <script setup>
-import { reactive, ref, watch } from 'vue';
-import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { reactive, ref } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import Dropdown from '@/Components/Dropdown.vue';
+import AssignUserPermissionsModal from './Partials/AssignUserPermissionsModal.vue';
+import AssignUserRolesModal from './Partials/AssignUserRolesModal.vue';
+import CreateUserModal from './Partials/CreateUserModal.vue';
+import DeleteUserModal from './Partials/DeleteUserModal.vue';
+import EditUserModal from './Partials/EditUserModal.vue';
 
 const props = defineProps({
     users: {
@@ -23,46 +29,13 @@ const props = defineProps({
 });
 
 const page = usePage();
-const showCreateForm = ref(false);
 const statusMessage = ref('');
+const activeModal = ref(null);
+const selectedUser = ref(null);
 const filters = reactive({
     search: props.filters.search ?? '',
     role: props.filters.role ?? '',
 });
-const createForm = useForm({
-    name: '',
-    email: '',
-    matric_no: '',
-    password: '',
-    password_confirmation: '',
-    roles: ['student'],
-    permissions: [],
-});
-const userForms = reactive({});
-
-watch(
-    () => props.users.data,
-    (users) => {
-        users.forEach((user) => {
-            const values = {
-                name: user.name,
-                email: user.email,
-                matric_no: user.matric_no ?? '',
-                roles: [...user.roles],
-                permissions: [...user.permissions],
-            };
-
-            if (!userForms[user.id]) {
-                userForms[user.id] = useForm(values);
-                return;
-            }
-
-            Object.assign(userForms[user.id], values);
-            userForms[user.id].defaults(values);
-        });
-    },
-    { immediate: true },
-);
 
 const filterUsers = () => {
     const query = {};
@@ -82,42 +55,18 @@ const resetFilters = () => {
     filterUsers();
 };
 
-const createUser = () => {
-    statusMessage.value = '';
-    createForm.post(route('admin.users.store'), {
-        onSuccess: () => {
-            createForm.reset();
-            statusMessage.value = 'User created.';
-            showCreateForm.value = false;
-        },
-    });
+const openUserModal = (modal, user = null) => {
+    selectedUser.value = user;
+    activeModal.value = modal;
 };
 
-const saveUser = (user) => {
-    const form = userForms[user.id];
-    statusMessage.value = '';
-    form.patch(route('admin.users.update', user.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            form.defaults();
-            form.reset();
-            statusMessage.value = 'User updated.';
-        },
-    });
+const closeModal = () => {
+    activeModal.value = null;
+    selectedUser.value = null;
 };
 
-const deleteUser = (user) => {
-    if (!window.confirm(`Delete the account for ${user.name}?`)) {
-        return;
-    }
-
-    statusMessage.value = '';
-    router.delete(route('admin.users.destroy', user.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            statusMessage.value = 'User deleted.';
-        },
-    });
+const userSaved = (message) => {
+    statusMessage.value = message;
 };
 
 const paginationLabel = (label) => label
@@ -138,9 +87,9 @@ const paginationLabel = (label) => label
                 <button
                     type="button"
                     class="rounded-md bg-purple-700 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-800"
-                    @click="showCreateForm = !showCreateForm"
+                    @click="openUserModal('create')"
                 >
-                    {{ showCreateForm ? 'Close form' : 'Add user' }}
+                    Add user
                 </button>
             </header>
 
@@ -150,59 +99,6 @@ const paginationLabel = (label) => label
             <p v-if="page.props.errors?.user" role="alert" class="border-l-4 border-rose-500 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
                 {{ page.props.errors.user }}
             </p>
-
-            <form v-if="showCreateForm" @submit.prevent="createUser" class="space-y-4 border-y border-gray-200 py-5 dark:border-gray-700">
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">New account</h2>
-                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    <div>
-                        <label for="new-user-name" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Full name</label>
-                        <input id="new-user-name" v-model="createForm.name" required autocomplete="name" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-                        <p v-if="createForm.errors.name" class="mt-1 text-sm text-rose-600">{{ createForm.errors.name }}</p>
-                    </div>
-                    <div>
-                        <label for="new-user-email" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-                        <input id="new-user-email" v-model="createForm.email" type="email" required autocomplete="email" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-                        <p v-if="createForm.errors.email" class="mt-1 text-sm text-rose-600">{{ createForm.errors.email }}</p>
-                    </div>
-                    <div>
-                        <label for="new-user-matric" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Matric number</label>
-                        <input id="new-user-matric" v-model="createForm.matric_no" autocomplete="off" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-                        <p v-if="createForm.errors.matric_no" class="mt-1 text-sm text-rose-600">{{ createForm.errors.matric_no }}</p>
-                    </div>
-                    <div>
-                        <label for="new-user-password" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Temporary password</label>
-                        <input id="new-user-password" v-model="createForm.password" type="password" required minlength="8" autocomplete="new-password" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-                        <p v-if="createForm.errors.password" class="mt-1 text-sm text-rose-600">{{ createForm.errors.password }}</p>
-                    </div>
-                    <div>
-                        <label for="new-user-password-confirmation" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm password</label>
-                        <input id="new-user-password-confirmation" v-model="createForm.password_confirmation" type="password" required minlength="8" autocomplete="new-password" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-                    </div>
-                </div>
-                <fieldset>
-                    <legend class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Roles</legend>
-                    <div class="flex flex-wrap gap-x-5 gap-y-2">
-                        <label v-for="role in roles" :key="role" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                            <input v-model="createForm.roles" type="checkbox" :value="role" class="rounded border-gray-300 text-purple-700 focus:ring-purple-600" />
-                            {{ role }}
-                        </label>
-                    </div>
-                    <p v-if="createForm.errors.roles" class="mt-1 text-sm text-rose-600">{{ createForm.errors.roles }}</p>
-                </fieldset>
-                <fieldset>
-                    <legend class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Direct permissions</legend>
-                    <div class="flex flex-wrap gap-x-5 gap-y-2">
-                        <label v-for="permission in permissions" :key="permission" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                            <input v-model="createForm.permissions" type="checkbox" :value="permission" class="rounded border-gray-300 text-purple-700 focus:ring-purple-600" />
-                            {{ permission }}
-                        </label>
-                    </div>
-                    <p v-if="createForm.errors.permissions" class="mt-1 text-sm text-rose-600">{{ createForm.errors.permissions }}</p>
-                </fieldset>
-                <button type="submit" :disabled="createForm.processing" class="rounded-md bg-purple-700 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-800 disabled:opacity-60">
-                    Create account
-                </button>
-            </form>
 
             <form @submit.prevent="filterUsers" class="flex flex-wrap items-end gap-3 border-b border-gray-200 pb-4 dark:border-gray-700">
                 <div class="min-w-56 flex-1">
@@ -250,59 +146,53 @@ const paginationLabel = (label) => label
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         <tr v-for="user in users.data" :key="user.id" class="align-top">
                             <td class="min-w-0 px-2 py-3 lg:px-3">
-                                <label :for="`user-name-${user.id}`" class="sr-only">Name</label>
-                                <input :id="`user-name-${user.id}`" v-model="userForms[user.id].name" required class="mb-2 w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-                                <label :for="`user-email-${user.id}`" class="sr-only">Email</label>
-                                <input :id="`user-email-${user.id}`" v-model="userForms[user.id].email" type="email" required class="w-full rounded-md border-gray-300 text-sm text-gray-600 shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300" />
-                                <p v-if="userForms[user.id].errors.name" class="mt-1 text-xs text-rose-600">{{ userForms[user.id].errors.name }}</p>
-                                <p v-if="userForms[user.id].errors.email" class="mt-1 text-xs text-rose-600">{{ userForms[user.id].errors.email }}</p>
+                                <p class="truncate font-medium text-gray-900 dark:text-gray-100">{{ user.name }}</p>
+                                <p class="mt-1 truncate text-sm text-gray-600 dark:text-gray-400">{{ user.email }}</p>
                             </td>
-                            <td class="px-4 py-3">
-                                <label :for="`user-matric-${user.id}`" class="sr-only">Matric number</label>
-                                <input :id="`user-matric-${user.id}`" v-model="userForms[user.id].matric_no" class="w-full min-w-0 rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-                                <p v-if="userForms[user.id].errors.matric_no" class="mt-1 text-xs text-rose-600">{{ userForms[user.id].errors.matric_no }}</p>
+                            <td class="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-300">
+                                {{ user.matric_no || '—' }}
                             </td>
-                            <td class="px-4 py-3">
-                                <details>
-                                    <summary class="w-fit cursor-pointer select-none rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-200">{{ userForms[user.id].roles.length }} roles</summary>
-                                    <fieldset class="mt-2 space-y-2">
-                                        <legend class="sr-only">User roles</legend>
-                                        <label v-for="role in roles" :key="role" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                                            <input v-model="userForms[user.id].roles" type="checkbox" :value="role" class="rounded border-gray-300 text-purple-700 focus:ring-purple-600" />
-                                            {{ role }}
-                                        </label>
-                                    </fieldset>
-                                </details>
-                                <p v-if="userForms[user.id].errors.roles" class="mt-1 text-xs text-rose-600">{{ userForms[user.id].errors.roles }}</p>
+                            <td class="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-300">
+                                {{ user.roles.length }} {{ user.roles.length === 1 ? 'role' : 'roles' }}
                             </td>
-                            <td class="px-4 py-3">
-                                <details>
-                                    <summary class="w-fit cursor-pointer select-none rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 dark:border-gray-600 dark:text-gray-200">{{ userForms[user.id].permissions.length }} direct</summary>
-                                    <fieldset class="mt-2 space-y-2">
-                                        <legend class="sr-only">Direct user permissions</legend>
-                                        <label v-for="permission in permissions" :key="permission" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                                            <input v-model="userForms[user.id].permissions" type="checkbox" :value="permission" class="rounded border-gray-300 text-purple-700 focus:ring-purple-600" />
-                                            {{ permission }}
-                                        </label>
-                                    </fieldset>
-                                </details>
-                                <p v-if="userForms[user.id].errors.permissions" class="mt-1 text-xs text-rose-600">{{ userForms[user.id].errors.permissions }}</p>
+                            <td class="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-300">
+                                {{ user.permissions.length }} {{ user.permissions.length === 1 ? 'direct' : 'direct' }}
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-300">{{ user.created_at }}</td>
                             <td class="whitespace-nowrap px-4 py-3">
                                 <span :class="user.email_verified ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-500 dark:text-gray-400'">{{ user.email_verified ? 'Yes' : 'No' }}</span>
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-right">
-                                <div class="inline-flex items-center gap-2">
-                                    <button type="button" :disabled="userForms[user.id].processing" class="rounded-md bg-purple-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-purple-800 disabled:opacity-60" @click="saveUser(user)">Save</button>
-                                    <button
-                                        type="button"
-                                        :disabled="user.id === page.props.auth.user.id"
-                                        :title="user.id === page.props.auth.user.id ? 'You cannot delete your own account' : 'Delete account'"
-                                        class="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-600 dark:text-rose-300 dark:hover:bg-rose-950/30"
-                                        @click="deleteUser(user)"
-                                    >Delete</button>
-                                </div>
+                                <Dropdown align="right" width="56" content-classes="bg-white py-1 dark:bg-gray-800">
+                                    <template #trigger>
+                                        <button type="button" class="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                                            Actions
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+                                            </svg>
+                                        </button>
+                                    </template>
+                                    <template #content>
+                                        <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" @click="openUserModal('edit', user)">
+                                            Edit profile
+                                        </button>
+                                        <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" @click="openUserModal('roles', user)">
+                                            Assign roles
+                                        </button>
+                                        <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" @click="openUserModal('permissions', user)">
+                                            Direct permissions
+                                        </button>
+                                        <button
+                                            type="button"
+                                            :disabled="user.id === page.props.auth.user.id"
+                                            :title="user.id === page.props.auth.user.id ? 'You cannot delete your own account' : 'Delete account'"
+                                            class="block w-full px-4 py-2 text-left text-sm text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-rose-300 dark:hover:bg-rose-950/30"
+                                            @click="openUserModal('delete', user)"
+                                        >
+                                            Delete account
+                                        </button>
+                                    </template>
+                                </Dropdown>
                             </td>
                         </tr>
                         <tr v-if="users.data.length === 0">
@@ -328,5 +218,39 @@ const paginationLabel = (label) => label
                 </Link>
             </nav>
         </div>
+
+        <CreateUserModal
+            :show="activeModal === 'create'"
+            :roles="roles"
+            :permissions="permissions"
+            @close="closeModal"
+            @saved="userSaved"
+        />
+        <EditUserModal
+            :show="activeModal === 'edit'"
+            :user="selectedUser"
+            @close="closeModal"
+            @saved="userSaved"
+        />
+        <AssignUserRolesModal
+            :show="activeModal === 'roles'"
+            :user="selectedUser"
+            :roles="roles"
+            @close="closeModal"
+            @saved="userSaved"
+        />
+        <AssignUserPermissionsModal
+            :show="activeModal === 'permissions'"
+            :user="selectedUser"
+            :permissions="permissions"
+            @close="closeModal"
+            @saved="userSaved"
+        />
+        <DeleteUserModal
+            :show="activeModal === 'delete'"
+            :user="selectedUser"
+            @close="closeModal"
+            @saved="userSaved"
+        />
     </AuthenticatedLayout>
 </template>

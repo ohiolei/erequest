@@ -7,88 +7,38 @@ import UserAccountMenu from '@/Components/UserAccountMenu.vue';
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
-const canManageUsers = computed(() => page.props.auth.canManageUsers);
-const canManageRoles = computed(() => page.props.auth.canManageRoles);
 const userIsActive = computed(() => (user.value?.status ?? 'active') === 'active');
 
 const sidebarOpen = ref(true);
 const expandedMenus = ref([]);
-
 const navItems = computed(() => page.props.sidebar_menu ?? []);
-
-const collectActiveKeys = (items) => {
-    const keys = [];
-
-    items.forEach((item) => {
-        if (!item.children?.length) {
-            return;
-        }
-
-        const hasActiveChild = item.children.some((child) => {
-            if (child.route && route().current(child.route)) {
-                return true;
-            }
-
-            return (child.children ?? []).some((nested) => nested.route && route().current(nested.route));
-        });
-
-        if (hasActiveChild && item.key) {
-            keys.push(item.key);
-        }
-    });
-
-    return keys;
-};
-
-watch(
-    () => page.url,
-    () => {
-        const activeKeys = collectActiveKeys(navItems.value);
-        expandedMenus.value = [...new Set([...expandedMenus.value, ...activeKeys])];
-    },
-    { immediate: true }
-);
-
-watch(
-    () => navItems.value.length,
-    () => {
-        const activeKeys = collectActiveKeys(navItems.value);
-        expandedMenus.value = [...new Set([...expandedMenus.value, ...activeKeys])];
-    }
-);
 
 const toggleSidebar = () => {
     sidebarOpen.value = !sidebarOpen.value;
 };
 
+const isActive = (routeName) => routeName && route().current(routeName);
+const isParentActive = (item) => item.children?.some((child) => isActive(child.route)) ?? false;
+
 const toggleMenu = (key) => {
-    const index = expandedMenus.value.indexOf(key);
-    if (index === -1) {
-        expandedMenus.value.push(key);
-    } else {
-        expandedMenus.value.splice(index, 1);
-    }
+    expandedMenus.value = expandedMenus.value.includes(key)
+        ? expandedMenus.value.filter((expandedKey) => expandedKey !== key)
+        : [...expandedMenus.value, key];
 };
 
 const isMenuExpanded = (key) => expandedMenus.value.includes(key);
 
-const isActive = (routeName) => routeName && route().current(routeName);
+watch(
+    () => page.url,
+    () => {
+        const activeParents = navItems.value
+            .filter(isParentActive)
+            .map((item) => item.key);
 
-const isChildActive = (routeName) => routeName && route().current(routeName);
-
-const isParentActive = (item) => {
-    if (!item.children?.length) {
-        return false;
-    }
-
-    return item.children.some((child) => {
-        if (child.route && route().current(child.route)) {
-            return true;
-        }
-
-        return (child.children ?? []).some((nested) => nested.route && route().current(nested.route));
-    });
-};
+        expandedMenus.value = [...new Set([...expandedMenus.value, ...activeParents])];
+    },
+    { immediate: true },
+);
 </script>
 
 <template>
@@ -165,112 +115,46 @@ const isParentActive = (item) => {
                 <div class="p-4">
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Module Navigation</p>
                     <nav class="space-y-0.5">
-                        <Link
-                            :href="route('dashboard')"
-                            :class="[
-                                'flex items-center gap-2.5 px-3 py-2.5 text-sm rounded-md transition',
-                                isActive('dashboard')
-                                    ? 'bg-purple-50 text-purple-700 font-medium dark:bg-purple-900/40 dark:text-purple-200'
-                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
-                            ]"
-                        >
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
-                            </svg>
-                            Dashboard
-                        </Link>
-                        <Link
-                            v-if="canManageUsers"
-                            :href="route('admin.users.index')"
-                            :class="[
-                                'flex items-center gap-2.5 px-3 py-2.5 text-sm rounded-md transition',
-                                isActive('admin.users.index')
-                                    ? 'bg-purple-50 text-purple-700 font-medium dark:bg-purple-900/40 dark:text-purple-200'
-                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
-                            ]"
-                        >
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-5.5-3.72M9 20H2v-2a4 4 0 017.5-2M16 3.13a4 4 0 010 7.75M8 3.13a4 4 0 000 7.75M12 14a4 4 0 100-8 4 4 0 000 8z" />
-                            </svg>
-                            User Manager
-                        </Link>
-                        <Link
-                            v-if="canManageRoles"
-                            :href="route('admin.roles.index')"
-                            :class="[
-                                'flex items-center gap-2.5 px-3 py-2.5 text-sm rounded-md transition',
-                                isActive('admin.roles.index')
-                                    ? 'bg-purple-50 text-purple-700 font-medium dark:bg-purple-900/40 dark:text-purple-200'
-                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
-                            ]"
-                        >
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 4v-2m0 2a2 2 0 100 4m0-4a2 2 0 110 4m12-8v-2m0 2a2 2 0 100 4m0-4a2 2 0 110 4M4 10h16M4 18h16" />
-                            </svg>
-                            Roles & Permissions
-                        </Link>
-                        <template v-for="item in navItems" :key="item.key || item.label">
-                            <!-- Item with children -->
+                        <template v-for="item in navItems" :key="item.key">
                             <div v-if="item.children?.length">
                                 <button
-                                    @click="toggleMenu(item.key)"
+                                    type="button"
+                                    :aria-expanded="isMenuExpanded(item.key)"
+                                    :aria-controls="`menu-${item.key}`"
                                     :class="[
                                         'w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-md transition',
                                         isParentActive(item)
                                             ? 'bg-purple-50 text-purple-700 font-medium dark:bg-purple-900/40 dark:text-purple-200'
                                             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
                                     ]"
+                                    @click="toggleMenu(item.key)"
                                 >
                                     <span class="flex items-center gap-2.5">
-                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                                         </svg>
                                         {{ item.label }}
                                     </span>
-                                    <svg
-                                        :class="['w-4 h-4 text-gray-400 transition-transform', isMenuExpanded(item.key) ? 'rotate-90' : '']"
-                                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                    >
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    <svg :class="['h-4 w-4 transition-transform', isMenuExpanded(item.key) ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7" />
                                     </svg>
                                 </button>
-                                <div v-show="isMenuExpanded(item.key)" class="ml-6 border-l border-gray-200 dark:border-gray-600 pl-2 space-y-0.5">
-                                    <template v-for="child in item.children" :key="child.label">
-                                        <div v-if="child.children?.length" class="space-y-0.5">
-                                            <p class="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-                                                {{ child.label }}
-                                            </p>
-                                            <Link
-                                                v-for="nested in child.children"
-                                                :key="`${child.label}-${nested.label}`"
-                                                :href="route(nested.route)"
-                                                :class="[
-                                                    'block px-3 py-2 text-sm rounded-md transition',
-                                                    isChildActive(nested.route)
-                                                        ? 'bg-purple-50 text-purple-700 font-medium dark:bg-purple-900/40 dark:text-purple-200'
-                                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100',
-                                                ]"
-                                            >
-                                                {{ nested.label }}
-                                            </Link>
-                                        </div>
-                                        <Link
-                                            v-else
-                                            :href="route(child.route)"
-                                            :class="[
-                                                'block px-3 py-2 text-sm rounded-md transition',
-                                                isChildActive(child.route)
-                                                    ? 'bg-purple-50 text-purple-700 font-medium dark:bg-purple-900/40 dark:text-purple-200'
-                                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100',
-                                            ]"
-                                        >
-                                            {{ child.label }}
-                                        </Link>
-                                    </template>
+                                <div v-show="isMenuExpanded(item.key)" :id="`menu-${item.key}`" class="ml-6 border-l border-gray-200 pl-2 dark:border-gray-600">
+                                    <Link
+                                        v-for="child in item.children"
+                                        :key="child.key"
+                                        :href="route(child.route)"
+                                        :class="[
+                                            'block rounded-md px-3 py-2 text-sm transition',
+                                            isActive(child.route)
+                                                ? 'bg-purple-50 font-medium text-purple-700 dark:bg-purple-900/40 dark:text-purple-200'
+                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-100',
+                                        ]"
+                                    >
+                                        {{ child.label }}
+                                    </Link>
                                 </div>
                             </div>
-
-                            <!-- Regular nav item -->
                             <Link
                                 v-else-if="item.route"
                                 :href="route(item.route)"
@@ -281,8 +165,8 @@ const isParentActive = (item) => {
                                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
                                 ]"
                             >
-                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                                 </svg>
                                 {{ item.label }}
                             </Link>
