@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\User;
+use Database\Seeders\MenuSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
@@ -17,6 +18,7 @@ class UserManagementTest extends TestCase
         parent::setUp();
 
         $this->seed(RolePermissionSeeder::class);
+        $this->seed(MenuSeeder::class);
     }
 
     public function test_admin_can_view_and_filter_users(): void
@@ -47,6 +49,20 @@ class UserManagementTest extends TestCase
         $this->actingAs($student)
             ->get(route('admin.users.index'))
             ->assertForbidden();
+    }
+
+    public function test_direct_user_management_permission_allows_page_access(): void
+    {
+        $user = User::factory()->create();
+        $user->givePermissionTo('manage users');
+
+        $this->actingAs($user)
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('sidebar_menu', 1)
+                ->where('sidebar_menu.0.key', 'administration')
+                ->where('sidebar_menu.0.children.0.key', 'users'));
     }
 
     public function test_admin_can_create_a_user_with_a_role(): void

@@ -12,6 +12,7 @@ defineProps({
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+const canManagePortal = computed(() => page.props.auth.canManageUsers || page.props.auth.canManageRoles);
 </script>
 
 <template>
@@ -22,14 +23,14 @@ const user = computed(() => page.props.auth.user);
             <header class="flex flex-wrap items-end justify-between gap-4 border-b border-gray-200 pb-5 dark:border-gray-700">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-300">
-                        {{ isAdmin ? 'Administration' : 'Student portal' }}
+                        {{ canManagePortal ? 'Administration' : 'Student portal' }}
                     </p>
                     <h1 class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
                         Welcome, {{ user?.name }}
                     </h1>
                 </div>
                 <span class="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium capitalize text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                    {{ isAdmin ? 'Administrator' : 'User' }}
+                    {{ isAdmin ? 'Administrator' : canManagePortal ? 'Management access' : 'User' }}
                 </span>
             </header>
 
@@ -37,12 +38,12 @@ const user = computed(() => page.props.auth.user);
                 <div>
                     <h2 id="quick-actions-heading" class="text-base font-semibold text-gray-900 dark:text-white">Quick actions</h2>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {{ isAdmin ? 'Manage portal accounts and access.' : 'Manage your account details.' }}
+                        {{ canManagePortal ? 'Available actions are based on your management permissions.' : 'Manage your account details.' }}
                     </p>
                 </div>
                 <div class="flex flex-wrap gap-3">
                     <Link
-                        v-if="isAdmin && page.props.auth.canManageUsers"
+                        v-if="page.props.auth.canManageUsers"
                         :href="route('admin.users.index')"
                         class="inline-flex items-center gap-2 rounded-md bg-purple-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-800"
                     >
@@ -52,7 +53,7 @@ const user = computed(() => page.props.auth.user);
                         Manage users
                     </Link>
                     <Link
-                        v-if="isAdmin && page.props.auth.canManageRoles"
+                        v-if="page.props.auth.canManageRoles"
                         :href="route('admin.roles.index')"
                         class="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                     >
@@ -84,7 +85,7 @@ const user = computed(() => page.props.auth.user);
                     </div>
                     <div>
                         <dt class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Access level</dt>
-                        <dd class="mt-1 text-sm capitalize text-gray-900 dark:text-gray-100">{{ isAdmin ? 'Administrator' : 'User' }}</dd>
+                        <dd class="mt-1 text-sm capitalize text-gray-900 dark:text-gray-100">{{ isAdmin ? 'Administrator' : canManagePortal ? 'Management access' : 'User' }}</dd>
                     </div>
                 </dl>
             </section>

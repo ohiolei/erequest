@@ -22,14 +22,14 @@ class RoleManagementController extends Controller
                 ->with('permissions')
                 ->withCount('users')
                 ->orderBy('name')
-                ->get()
-                ->map(fn (Role $role) => [
+                ->paginate(10, ['*'], 'roles_page')
+                ->withQueryString()
+                ->through(fn (Role $role) => [
                     'id' => $role->id,
                     'name' => $role->name,
                     'permissions' => $role->permissions->pluck('name')->values(),
                     'users_count' => $role->users_count,
-                ])
-                ->values(),
+                ]),
             'permissions' => Permission::query()
                 ->where('guard_name', 'web')
                 ->orderBy('name')
@@ -38,14 +38,14 @@ class RoleManagementController extends Controller
                 ->where('guard_name', 'web')
                 ->withCount(['roles', 'users'])
                 ->orderBy('name')
-                ->get()
-                ->map(fn (Permission $permission) => [
+                ->paginate(10, ['*'], 'permissions_page')
+                ->withQueryString()
+                ->through(fn (Permission $permission) => [
                     'id' => $permission->id,
                     'name' => $permission->name,
                     'roles_count' => $permission->roles_count,
                     'users_count' => $permission->users_count,
-                ])
-                ->values(),
+                ]),
         ]);
     }
 

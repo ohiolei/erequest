@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\User;
+use Database\Seeders\MenuSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
@@ -18,6 +19,7 @@ class RoleManagementTest extends TestCase
         parent::setUp();
 
         $this->seed(RolePermissionSeeder::class);
+        $this->seed(MenuSeeder::class);
     }
 
     public function test_admin_can_view_roles_and_permissions(): void
@@ -30,9 +32,29 @@ class RoleManagementTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Roles/Index')
-                ->has('roles', 2)
+                ->has('roles.data', 2)
                 ->has('permissions', 8)
-                ->has('permissionRecords', 8));
+                ->has('permissionRecords.data', 8));
+    }
+
+    public function test_roles_and_permissions_have_independent_pagination(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        foreach (range(1, 11) as $index) {
+            Role::create(['name' => 'reviewer-'.$index, 'guard_name' => 'web']);
+            Permission::create(['name' => 'extra permission '.$index, 'guard_name' => 'web']);
+        }
+
+        $this->actingAs($admin)
+            ->get(route('admin.roles.index', ['roles_page' => 2, 'permissions_page' => 2]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('roles.current_page', 2)
+                ->has('roles.data', 3)
+                ->where('permissionRecords.current_page', 2)
+                ->has('permissionRecords.data', 9));
     }
 
     public function test_student_cannot_manage_roles(): void
@@ -43,6 +65,21 @@ class RoleManagementTest extends TestCase
         $this->actingAs($student)
             ->get(route('admin.roles.index'))
             ->assertForbidden();
+    }
+
+    public function test_direct_role_management_permission_allows_page_access(): void
+    {
+        $user = User::factory()->create();
+        $user->givePermissionTo('manage roles');
+
+        $this->actingAs($user)
+            ->get(route('admin.roles.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('sidebar_menu', 1)
+                ->has('sidebar_menu.0.children', 1)
+                ->where('sidebar_menu.0.key', 'administration')
+                ->where('sidebar_menu.0.children.0.key', 'roles'));
     }
 
     public function test_admin_can_create_a_role_with_permissions(): void

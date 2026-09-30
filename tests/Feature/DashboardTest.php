@@ -51,4 +51,21 @@ class DashboardTest extends TestCase
                 ->where('sidebar_menu.1.key', 'administration')
                 ->has('sidebar_menu.1.children', 2));
     }
+
+    public function test_direct_permissions_grant_matching_sidebar_items_without_a_role(): void
+    {
+        $user = User::factory()->create();
+        $user->givePermissionTo(['view dashboard', 'manage users']);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('sidebar_menu', 2)
+                ->where('sidebar_menu.0.key', 'dashboard')
+                ->where('sidebar_menu.1.key', 'administration')
+                ->has('sidebar_menu.1.children', 1)
+                ->where('sidebar_menu.1.children.0.key', 'users')
+                ->where('auth.canManageUsers', true));
+    }
 }

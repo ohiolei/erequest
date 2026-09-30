@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import AttachPermissionsModal from './Partials/AttachPermissionsModal.vue';
@@ -13,7 +13,7 @@ import EditPermissionModal from './Partials/EditPermissionModal.vue';
 
 const props = defineProps({
     roles: {
-        type: Array,
+        type: Object,
         required: true,
     },
     permissions: {
@@ -21,7 +21,7 @@ const props = defineProps({
         required: true,
     },
     permissionRecords: {
-        type: Array,
+        type: Object,
         required: true,
     },
 });
@@ -66,6 +66,10 @@ const closePermissionModal = () => {
 const permissionSaved = (message) => {
     statusMessage.value = message;
 };
+
+const paginationLabel = (label) => label
+    .replaceAll('&laquo;', '‹')
+    .replaceAll('&raquo;', '›');
 </script>
 
 <template>
@@ -78,7 +82,7 @@ const permissionSaved = (message) => {
                     <p class="text-xs font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-300">Administration</p>
                     <h1 class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">Roles & Permissions</h1>
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ roles.length }} roles · {{ permissions.length }} permissions</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ roles.total }} roles · {{ permissionRecords.total }} permissions</p>
             </header>
 
             <p v-if="statusMessage" role="status" class="border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
@@ -101,7 +105,7 @@ const permissionSaved = (message) => {
                     :class="['border-b-2 px-4 py-3 text-sm font-medium', activeTab === 'roles' ? 'border-purple-700 text-purple-700 dark:text-purple-300' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200']"
                     @click="activeTab = 'roles'"
                 >
-                    Roles <span class="ml-1 text-xs">{{ roles.length }}</span>
+                    Roles <span class="ml-1 text-xs">{{ roles.total }}</span>
                 </button>
                 <button
                     id="permissions-tab"
@@ -112,7 +116,7 @@ const permissionSaved = (message) => {
                     :class="['border-b-2 px-4 py-3 text-sm font-medium', activeTab === 'permissions' ? 'border-purple-700 text-purple-700 dark:text-purple-300' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200']"
                     @click="activeTab = 'permissions'"
                 >
-                    Permissions <span class="ml-1 text-xs">{{ permissionRecords.length }}</span>
+                    Permissions <span class="ml-1 text-xs">{{ permissionRecords.total }}</span>
                 </button>
             </div>
 
@@ -138,7 +142,7 @@ const permissionSaved = (message) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr v-for="role in roles" :key="role.id" class="align-top">
+                            <tr v-for="role in roles.data" :key="role.id" class="align-top">
                                 <td class="whitespace-nowrap px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
                                     {{ role.name }}
                                 </td>
@@ -177,12 +181,29 @@ const permissionSaved = (message) => {
                                     </Dropdown>
                                 </td>
                             </tr>
-                            <tr v-if="roles.length === 0">
+                            <tr v-if="roles.data.length === 0">
                                 <td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500">No roles have been created.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+                <nav v-if="roles.links.length > 3" aria-label="Role list pages" class="flex flex-wrap justify-end gap-1">
+                    <Link
+                        v-for="link in roles.links"
+                        :key="`roles-${link.label}`"
+                        :href="link.url ?? '#'"
+                        :aria-current="link.active ? 'page' : undefined"
+                        preserve-state
+                        preserve-scroll
+                        :class="[
+                            'min-w-9 rounded border px-3 py-2 text-center text-sm',
+                            link.active ? 'border-purple-700 bg-purple-700 text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800',
+                            !link.url ? 'pointer-events-none opacity-40' : '',
+                        ]"
+                    >
+                        {{ paginationLabel(link.label) }}
+                    </Link>
+                </nav>
             </section>
 
             <section id="permissions-panel" role="tabpanel" aria-labelledby="permissions-tab" v-show="activeTab === 'permissions'" class="space-y-5">
@@ -206,7 +227,7 @@ const permissionSaved = (message) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr v-for="permission in permissionRecords" :key="permission.id">
+                            <tr v-for="permission in permissionRecords.data" :key="permission.id">
                                 <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
                                     {{ permission.name }}
                                 </td>
@@ -234,12 +255,29 @@ const permissionSaved = (message) => {
                                     </Dropdown>
                                 </td>
                             </tr>
-                            <tr v-if="permissionRecords.length === 0">
+                            <tr v-if="permissionRecords.data.length === 0">
                                 <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-500">No permissions have been created.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+                <nav v-if="permissionRecords.links.length > 3" aria-label="Permission list pages" class="flex flex-wrap justify-end gap-1">
+                    <Link
+                        v-for="link in permissionRecords.links"
+                        :key="`permissions-${link.label}`"
+                        :href="link.url ?? '#'"
+                        :aria-current="link.active ? 'page' : undefined"
+                        preserve-state
+                        preserve-scroll
+                        :class="[
+                            'min-w-9 rounded border px-3 py-2 text-center text-sm',
+                            link.active ? 'border-purple-700 bg-purple-700 text-white' : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800',
+                            !link.url ? 'pointer-events-none opacity-40' : '',
+                        ]"
+                    >
+                        {{ paginationLabel(link.label) }}
+                    </Link>
+                </nav>
             </section>
         </div>
 

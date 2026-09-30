@@ -52,8 +52,9 @@ class HandleInertiaRequests extends Middleware
             ->orderBy('sort_order')
             ->get()
             ->filter(fn (MenuItem $item) => (! $item->route || Route::has($item->route))
-                && (! $item->roles || $request->user()->hasAnyRole($item->roles))
-                && (! $item->permission || $request->user()->can($item->permission)))
+                        && ($item->permission
+                            ? $request->user()->can($item->permission)
+                            : (! $item->roles || $request->user()->hasAnyRole($item->roles))))
             ->values();
 
         return $visibleItems
