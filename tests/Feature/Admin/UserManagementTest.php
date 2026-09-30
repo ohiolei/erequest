@@ -23,9 +23,9 @@ class UserManagementTest extends TestCase
 
     public function test_admin_can_view_and_filter_users(): void
     {
-        $admin = User::factory()->create(['name' => 'Portal Admin']);
+        $admin = User::factory()->create(['fname' => 'Portal', 'lname' => 'Admin']);
         $admin->assignRole('admin');
-        $student = User::factory()->create(['name' => 'Jamie Student']);
+        $student = User::factory()->create(['fname' => 'Jamie', 'lname' => 'Student']);
         $student->assignRole('student');
 
         $this->actingAs($admin)
@@ -46,7 +46,7 @@ class UserManagementTest extends TestCase
         $admin = User::factory()->create();
         $admin->assignRole('admin');
 
-        User::factory()->count(7)->create();
+        User::factory()->count(12)->create();
 
         $this->actingAs($admin)
             ->get(route('admin.users.index', ['users_page' => 2]))
@@ -76,7 +76,7 @@ class UserManagementTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->has('sidebar_menu', 1)
-                ->where('sidebar_menu.0.key', 'administration')
+                ->where('sidebar_menu.0.key', 'central_is')
                 ->where('sidebar_menu.0.children.0.key', 'users'));
     }
 
@@ -87,7 +87,9 @@ class UserManagementTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('admin.users.store'), [
-                'name' => 'New Student',
+                'fname' => 'New',
+                'mname' => null,
+                'lname' => 'Student',
                 'email' => 'new.student@example.com',
                 'matric_no' => 'tasfued/2026/100',
                 'password' => 'temporary-password',
@@ -98,6 +100,8 @@ class UserManagementTest extends TestCase
             ->assertRedirect(route('admin.users.index'));
 
         $user = User::where('email', 'new.student@example.com')->firstOrFail();
+        $this->assertSame('New', $user->fname);
+        $this->assertSame('Student', $user->lname);
         $this->assertSame('TASFUED/2026/100', $user->matric_no);
         $this->assertTrue($user->hasRole('student'));
         $this->assertTrue($user->hasDirectPermission('view all requests'));
@@ -112,13 +116,17 @@ class UserManagementTest extends TestCase
 
         $this->actingAs($admin)
             ->patch(route('admin.users.update', $student), [
-                'name' => 'Updated Student',
+                'fname' => 'Updated',
+                'mname' => null,
+                'lname' => 'Student',
                 'email' => 'updated.student@example.com',
                 'matric_no' => 'tasfued/2026/101',
             ])
             ->assertRedirect();
 
         $student->refresh();
+        $this->assertSame('Updated', $student->fname);
+        $this->assertSame('Student', $student->lname);
         $this->assertSame('Updated Student', $student->name);
         $this->assertSame('updated.student@example.com', $student->email);
         $this->assertSame('TASFUED/2026/101', $student->matric_no);

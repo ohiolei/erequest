@@ -37,6 +37,8 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'canManageUsers' => $request->user()?->can('manage users') ?? false,
                 'canManageRoles' => $request->user()?->can('manage roles') ?? false,
+                'canEditStudents' => $request->user()?->can('edit students') ?? false,
+                'canCreateStaff' => $request->user()?->can('create staff') ?? false,
             ],
             'sidebar_menu' => fn () => $request->user()
                 ? $this->sidebarMenu($request)

@@ -3,7 +3,9 @@ import { ref } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
-    name: '',
+    fname: '',
+    mname: '',
+    lname: '',
     matric_no: '',
     email: '',
     password: '',
@@ -44,21 +46,50 @@ const submit = () => {
             <div class="p-8 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-2xl backdrop-blur-md">
                 <form @submit.prevent="submit" class="space-y-4">
                     <div>
-                        <label for="name" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                            Full Name
-                        </label>
+                        <label for="fname" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">First Name</label>
                         <input
-                            id="name"
+                            id="fname"
                             type="text"
-                            v-model="form.name"
+                            v-model="form.fname"
                             required
                             autofocus
-                            autocomplete="name"
-                            placeholder="John Doe"
+                            autocomplete="given-name"
+                            placeholder="John"
                             class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-sm"
                         />
-                        <div v-if="form.errors.name" class="text-rose-400 text-xs mt-1 font-medium">
-                            {{ form.errors.name }}
+                        <div v-if="form.errors.fname" class="text-rose-400 text-xs mt-1 font-medium">
+                            {{ form.errors.fname }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="mname" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Middle Name <span class="font-normal normal-case tracking-normal">(optional)</span></label>
+                        <input
+                            id="mname"
+                            type="text"
+                            v-model="form.mname"
+                            autocomplete="additional-name"
+                            placeholder="A."
+                            class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-sm"
+                        />
+                        <div v-if="form.errors.mname" class="text-rose-400 text-xs mt-1 font-medium">
+                            {{ form.errors.mname }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="lname" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Last Name</label>
+                        <input
+                            id="lname"
+                            type="text"
+                            v-model="form.lname"
+                            required
+                            autocomplete="family-name"
+                            placeholder="Doe"
+                            class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-sm"
+                        />
+                        <div v-if="form.errors.lname" class="text-rose-400 text-xs mt-1 font-medium">
+                            {{ form.errors.lname }}
                         </div>
                     </div>
 

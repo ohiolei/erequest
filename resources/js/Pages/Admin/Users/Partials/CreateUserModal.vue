@@ -1,5 +1,5 @@
 <script setup>
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
 
@@ -7,21 +7,28 @@ const props = defineProps({
     show: { type: Boolean, default: false },
     roles: { type: Array, required: true },
     permissions: { type: Array, required: true },
+    defaultRoles: { type: Array, default: () => ['student'] },
 });
 
 const emit = defineEmits(['close', 'saved']);
 const form = useForm({
-    name: '',
+    fname: '',
+    mname: '',
+    lname: '',
     email: '',
     matric_no: '',
+    staff_number: '',
     password: '',
     password_confirmation: '',
-    roles: ['student'],
+    roles: props.defaultRoles,
     permissions: [],
 });
 
-watch(() => props.show, (show) => {
+const isStudent = computed(() => props.defaultRoles.includes('student'));
+
+watch(() => [props.show, props.defaultRoles], ([show, defaultRoles]) => {
     if (show) {
+        form.defaults({ roles: defaultRoles });
         form.reset();
         form.clearErrors();
     }
@@ -48,19 +55,34 @@ const submit = () => {
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <label for="create-user-name" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Full name</label>
-                    <input id="create-user-name" v-model="form.name" required autocomplete="name" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
-                    <p v-if="form.errors.name" class="mt-1 text-sm text-rose-600">{{ form.errors.name }}</p>
+                    <label for="create-user-fname" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">First name</label>
+                    <input id="create-user-fname" v-model="form.fname" required autocomplete="given-name" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
+                    <p v-if="form.errors.fname" class="mt-1 text-sm text-rose-600">{{ form.errors.fname }}</p>
+                </div>
+                <div>
+                    <label for="create-user-mname" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Middle name <span class="font-normal text-gray-500">(optional)</span></label>
+                    <input id="create-user-mname" v-model="form.mname" autocomplete="additional-name" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
+                    <p v-if="form.errors.mname" class="mt-1 text-sm text-rose-600">{{ form.errors.mname }}</p>
+                </div>
+                <div>
+                    <label for="create-user-lname" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Last name</label>
+                    <input id="create-user-lname" v-model="form.lname" required autocomplete="family-name" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
+                    <p v-if="form.errors.lname" class="mt-1 text-sm text-rose-600">{{ form.errors.lname }}</p>
                 </div>
                 <div>
                     <label for="create-user-email" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
                     <input id="create-user-email" v-model="form.email" type="email" required autocomplete="email" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
                     <p v-if="form.errors.email" class="mt-1 text-sm text-rose-600">{{ form.errors.email }}</p>
                 </div>
-                <div>
+                <div v-if="isStudent">
                     <label for="create-user-matric" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Matric number</label>
                     <input id="create-user-matric" v-model="form.matric_no" autocomplete="off" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
                     <p v-if="form.errors.matric_no" class="mt-1 text-sm text-rose-600">{{ form.errors.matric_no }}</p>
+                </div>
+                <div v-else>
+                    <label for="create-user-staff" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Staff number</label>
+                    <input id="create-user-staff" v-model="form.staff_number" autocomplete="off" class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
+                    <p v-if="form.errors.staff_number" class="mt-1 text-sm text-rose-600">{{ form.errors.staff_number }}</p>
                 </div>
                 <div>
                     <label for="create-user-password" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Temporary password</label>
@@ -76,7 +98,7 @@ const submit = () => {
             <fieldset>
                 <legend class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Roles</legend>
                 <div class="flex flex-wrap gap-x-5 gap-y-2">
-                    <label v-for="role in roles" :key="role" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <label v-for="role in roles.filter((role) => role !== 'student')" :key="role" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                         <input v-model="form.roles" type="checkbox" :value="role" class="rounded border-gray-300 text-purple-700 focus:ring-purple-600" />
                         {{ role }}
                     </label>

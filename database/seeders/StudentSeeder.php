@@ -11,19 +11,21 @@ class StudentSeeder extends Seeder
     public function run(): void
     {
         $students = [
-            ['name' => 'imole', 'email' => 'imole@gmail.com', 'matric_no' => '2022130240'],
-            ['name' => 'Amina Yusuf', 'email' => 'amina.yusuf@example.com', 'matric_no' => 'TASFUED/2022/130241'],
-            ['name' => 'Daniel Okafor', 'email' => 'daniel.okafor@example.com', 'matric_no' => 'TASFUED/2022/130242'],
-            ['name' => 'Grace Adeyemi', 'email' => 'grace.adeyemi@example.com', 'matric_no' => 'TASFUED/2022/130243'],
-            ['name' => 'Samuel Bello', 'email' => 'samuel.bello@example.com', 'matric_no' => 'TASFUED/2022/130244'],
-            ['name' => 'Zainab Ibrahim', 'email' => 'zainab.ibrahim@example.com', 'matric_no' => 'TASFUED/2022/130245'],
+            ['fname' => 'imole', 'mname' => null, 'lname' => null, 'email' => 'imole@gmail.com', 'matric_no' => '2022130240'],
+            ['fname' => 'Amina', 'mname' => null, 'lname' => 'Yusuf', 'email' => 'amina.yusuf@example.com', 'matric_no' => 'TASFUED/2022/130241'],
+            ['fname' => 'Daniel', 'mname' => null, 'lname' => 'Okafor', 'email' => 'daniel.okafor@example.com', 'matric_no' => 'TASFUED/2022/130242'],
+            ['fname' => 'Grace', 'mname' => null, 'lname' => 'Adeyemi', 'email' => 'grace.adeyemi@example.com', 'matric_no' => 'TASFUED/2022/130243'],
+            ['fname' => 'Samuel', 'mname' => null, 'lname' => 'Bello', 'email' => 'samuel.bello@example.com', 'matric_no' => 'TASFUED/2022/130244'],
+            ['fname' => 'Zainab', 'mname' => null, 'lname' => 'Ibrahim', 'email' => 'zainab.ibrahim@example.com', 'matric_no' => 'TASFUED/2022/130245'],
         ];
 
         foreach ($students as $studentData) {
             $student = User::firstOrCreate(
                 ['email' => $studentData['email']],
                 [
-                    'name' => $studentData['name'],
+                    'fname' => $studentData['fname'],
+                    'mname' => $studentData['mname'],
+                    'lname' => $studentData['lname'],
                     'matric_no' => strtoupper($studentData['matric_no']),
                     'email_verified_at' => now(),
                     'password' => Hash::make('12345'),

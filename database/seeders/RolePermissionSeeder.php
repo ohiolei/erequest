@@ -22,6 +22,8 @@ class RolePermissionSeeder extends Seeder
             'manage requests',
             'manage users',
             'manage roles',
+            'edit students',
+            'create staff',
         ];
 
         foreach ($permissions as $permission) {

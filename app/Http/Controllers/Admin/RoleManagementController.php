@@ -22,7 +22,7 @@ class RoleManagementController extends Controller
                 ->with('permissions')
                 ->withCount('users')
                 ->orderBy('name')
-                ->paginate(5, ['*'], 'roles_page')
+                ->paginate(10, ['*'], 'roles_page')
                 ->withQueryString()
                 ->through(fn (Role $role) => [
                     'id' => $role->id,
@@ -38,7 +38,7 @@ class RoleManagementController extends Controller
                 ->where('guard_name', 'web')
                 ->withCount(['roles', 'users'])
                 ->orderBy('name')
-                ->paginate(5, ['*'], 'permissions_page')
+                ->paginate(10, ['*'], 'permissions_page')
                 ->withQueryString()
                 ->through(fn (Permission $permission) => [
                     'id' => $permission->id,

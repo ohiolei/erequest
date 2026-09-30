@@ -14,11 +14,13 @@ defineProps({
     },
 });
 
-const user = usePage().props.auth.user;
+const page = usePage();
+const user = page.props.value.user;
 
 const form = useForm({
-    name: user.name,
-    email: user.email,
+    fname: user.fname || '',
+    mname: user.mname || '',
+    lname: user.lname || '',
 });
 </script>
 
@@ -38,35 +40,22 @@ const form = useForm({
             @submit.prevent="form.patch(route('profile.update'))"
             class="mt-6 space-y-6"
         >
-            <div>
-                <InputLabel for="name" value="Name" />
-
-                <TextInput
-                    id="name"
-                    type="text"
-                    class="mt-1 block w-full"
-                    v-model="form.name"
-                    required
-                    autofocus
-                    autocomplete="name"
-                />
-
-                <InputError class="mt-2" :message="form.errors.name" />
-            </div>
-
-            <div>
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autocomplete="username"
-                />
-
-                <InputError class="mt-2" :message="form.errors.email" />
+            <div class="grid gap-4 sm:grid-cols-3">
+                <div>
+                    <InputLabel for="fname" value="First name" />
+                    <TextInput id="fname" type="text" class="mt-1 block w-full" v-model="form.fname" required autofocus autocomplete="given-name" />
+                    <InputError class="mt-2" :message="form.errors.fname" />
+                </div>
+                <div>
+                    <InputLabel for="mname" value="Middle name (optional)" />
+                    <TextInput id="mname" type="text" class="mt-1 block w-full" v-model="form.mname" autocomplete="additional-name" />
+                    <InputError class="mt-2" :message="form.errors.mname" />
+                </div>
+                <div>
+                    <InputLabel for="lname" value="Last name (optional for existing single-name accounts)" />
+                    <TextInput id="lname" type="text" class="mt-1 block w-full" v-model="form.lname" autocomplete="family-name" />
+                    <InputError class="mt-2" :message="form.errors.lname" />
+                </div>
             </div>
 
             <div v-if="mustVerifyEmail && user.email_verified_at === null">

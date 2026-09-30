@@ -23,7 +23,9 @@ class RegistrationTest extends TestCase
         $this->seed(RolePermissionSeeder::class);
 
         $response = $this->post('/register', [
-            'name' => 'Test User',
+            'fname' => 'Test',
+            'mname' => 'Middle',
+            'lname' => 'User',
             'matric_no' => 'tasfued/2026/001',
             'email' => 'test@example.com',
             'password' => 'password',
@@ -32,6 +34,9 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $this->assertDatabaseHas('users', [
+            'fname' => 'Test',
+            'mname' => 'Middle',
+            'lname' => 'User',
             'email' => 'test@example.com',
             'matric_no' => 'TASFUED/2026/001',
         ]);
@@ -44,7 +49,8 @@ class RegistrationTest extends TestCase
         User::factory()->create(['matric_no' => 'TASFUED/2026/001']);
 
         $response = $this->post('/register', [
-            'name' => 'Another User',
+            'fname' => 'Another',
+            'lname' => 'User',
             'matric_no' => 'tasfued/2026/001',
             'email' => 'another@example.com',
             'password' => 'password',

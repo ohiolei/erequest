@@ -48,7 +48,7 @@ class DashboardTest extends TestCase
                 ->component('Dashboard')
                 ->where('isAdmin', true)
                 ->has('sidebar_menu', 3)
-                ->where('sidebar_menu.1.key', 'administration')
+                ->where('sidebar_menu.1.key', 'central_is')
                 ->has('sidebar_menu.1.children', 2));
     }
 
@@ -63,7 +63,7 @@ class DashboardTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->has('sidebar_menu', 2)
                 ->where('sidebar_menu.0.key', 'dashboard')
-                ->where('sidebar_menu.1.key', 'administration')
+                ->where('sidebar_menu.1.key', 'central_is')
                 ->has('sidebar_menu.1.children', 1)
                 ->where('sidebar_menu.1.children.0.key', 'users')
                 ->where('auth.canManageUsers', true));

@@ -14,7 +14,9 @@ class AdminSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['email' => "ttihub@taused.edu.ng"],
             [
-                'name' => 'Admin',
+                'fname' => 'Admin',
+                'mname' => null,
+                'lname' => null,
                 'staff_number' => strtoupper('pss2022'),
                 'email_verified_at' => now(),
                 'password' => Hash::make('12345'),
@@ -26,7 +28,9 @@ class AdminSeeder extends Seeder
         $sheggz = User::firstOrCreate(
             ['email' => "akinwandeov@tasued.edu.ng"],
             [
-                'name' => 'Akinwande Olusegun',
+                'fname' => 'Olusegun',
+                'mname' => null,
+                'lname' => 'Akinwande',
                 'staff_number' => strtoupper('pss2724'),
                 'email_verified_at' => now(),
                 'password' => Hash::make('12345'),
@@ -38,7 +42,9 @@ class AdminSeeder extends Seeder
         $wills = User::firstOrCreate(
             ['email' => "williamsoo@tasued.edu.ng"],
             [
-                'name' => 'Williams Oluwatobiloba',
+                'fname' => 'Oluwatobiloba',
+                'mname' => null,
+                'lname' => 'Williams',
                 'staff_number' => strtoupper('pss2481'),
                 'email_verified_at' => now(),
                 'password' => Hash::make('12345'),

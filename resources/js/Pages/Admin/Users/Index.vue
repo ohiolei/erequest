@@ -26,19 +26,37 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    tab: {
+        type: String,
+        default: 'students',
+    },
 });
 
 const page = usePage();
 const statusMessage = ref('');
 const activeModal = ref(null);
 const selectedUser = ref(null);
+const activeTab = ref(props.tab);
 const filters = reactive({
     search: props.filters.search ?? '',
     role: props.filters.role ?? '',
 });
 
+const switchTab = (tab) => {
+    activeTab.value = tab;
+    filters.role = '';
+    const query = { tab };
+    if (filters.search.trim()) query.search = filters.search.trim();
+
+    router.get(route('admin.users.index'), query, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
+};
+
 const filterUsers = () => {
-    const query = {};
+    const query = { tab: activeTab.value };
     if (filters.search.trim()) query.search = filters.search.trim();
     if (filters.role) query.role = filters.role;
 
@@ -85,11 +103,12 @@ const paginationLabel = (label) => label
                     <h1 class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">User Manager</h1>
                 </div>
                 <button
+                    v-if="activeTab === 'staff' && page.props.auth.canCreateStaff"
                     type="button"
                     class="rounded-md bg-purple-700 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-800"
                     @click="openUserModal('create')"
                 >
-                    Add user
+                    Add staff
                 </button>
             </header>
 
@@ -99,6 +118,35 @@ const paginationLabel = (label) => label
             <p v-if="page.props.errors?.user" role="alert" class="border-l-4 border-rose-500 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
                 {{ page.props.errors.user }}
             </p>
+
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <nav class="-mb-px flex gap-6" aria-label="Tabs">
+                    <button
+                        type="button"
+                        @click="switchTab('students')"
+                        :class="[
+                            'whitespace-nowrap border-b-2 py-2 px-1 text-sm font-medium',
+                            activeTab === 'students'
+                                ? 'border-purple-700 text-purple-700 dark:text-purple-300'
+                                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
+                        ]"
+                    >
+                        Students
+                    </button>
+                    <button
+                        type="button"
+                        @click="switchTab('staff')"
+                        :class="[
+                            'whitespace-nowrap border-b-2 py-2 px-1 text-sm font-medium',
+                            activeTab === 'staff'
+                                ? 'border-purple-700 text-purple-700 dark:text-purple-300'
+                                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
+                        ]"
+                    >
+                        Staff
+                    </button>
+                </nav>
+            </div>
 
             <form @submit.prevent="filterUsers" class="flex flex-wrap items-end gap-3 border-b border-gray-200 pb-4 dark:border-gray-700">
                 <div class="min-w-56 flex-1">
@@ -117,7 +165,7 @@ const paginationLabel = (label) => label
             </form>
 
             <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                <p>{{ users.total }} users</p>
+                <p>{{ users.total }} {{ activeTab === 'students' ? 'students' : 'staff members' }}</p>
                 <p>Showing {{ users.from ?? 0 }}–{{ users.to ?? 0 }}</p>
             </div>
 
@@ -135,7 +183,7 @@ const paginationLabel = (label) => label
                     <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-900 dark:text-gray-400">
                         <tr>
                             <th scope="col" class="px-4 py-3">User</th>
-                            <th scope="col" class="px-4 py-3">Matric number</th>
+                            <th scope="col" class="px-4 py-3">{{ activeTab === 'students' ? 'Matric number' : 'Staff number' }}</th>
                             <th scope="col" class="px-4 py-3">Roles</th>
                             <th scope="col" class="px-4 py-3">Direct permissions</th>
                             <th scope="col" class="px-4 py-3">Joined</th>
@@ -150,7 +198,7 @@ const paginationLabel = (label) => label
                                 <p class="mt-1 truncate text-sm text-gray-600 dark:text-gray-400">{{ user.email }}</p>
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-300">
-                                {{ user.matric_no || '—' }}
+                                {{ activeTab === 'students' ? (user.matric_no || '—') : (user.staff_number || '—') }}
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-300">
                                 {{ user.roles.length }} {{ user.roles.length === 1 ? 'role' : 'roles' }}
@@ -173,10 +221,13 @@ const paginationLabel = (label) => label
                                         </button>
                                     </template>
                                     <template #content>
-                                        <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" @click="openUserModal('edit', user)">
+                                        <button v-if="!user.roles.includes('student') || page.props.auth.canEditStudents" type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" @click="openUserModal('edit', user)">
                                             Edit profile
                                         </button>
-                                        <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" @click="openUserModal('roles', user)">
+                                        <button v-if="user.roles.includes('student') && !page.props.auth.canEditStudents" type="button" disabled class="block w-full px-4 py-2 text-left text-sm text-gray-400 dark:text-gray-500 disabled:cursor-not-allowed" title="You do not have permission to edit students">
+                                            Edit student
+                                        </button>
+                                        <button v-if="!user.roles.includes('student')" type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" @click="openUserModal('roles', user)">
                                             Assign roles
                                         </button>
                                         <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" @click="openUserModal('permissions', user)">
@@ -196,7 +247,7 @@ const paginationLabel = (label) => label
                             </td>
                         </tr>
                         <tr v-if="users.data.length === 0">
-                            <td colspan="7" class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">No users match these filters.</td>
+                            <td colspan="7" class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">No {{ activeTab === 'students' ? 'students' : 'staff' }} match these filters.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -204,7 +255,7 @@ const paginationLabel = (label) => label
 
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                    Showing {{ users.from ?? 0 }}–{{ users.to ?? 0 }} of {{ users.total }} users
+                    Showing {{ users.from ?? 0 }}–{{ users.to ?? 0 }} of {{ users.total }} {{ activeTab === 'students' ? 'students' : 'staff members' }}
                 </p>
                 <nav aria-label="User list pages" class="flex flex-wrap justify-end gap-1">
                     <Link
@@ -230,6 +281,7 @@ const paginationLabel = (label) => label
             :show="activeModal === 'create'"
             :roles="roles"
             :permissions="permissions"
+            :default-roles="activeTab === 'students' ? ['student'] : ['admin']"
             @close="closeModal"
             @saved="userSaved"
         />

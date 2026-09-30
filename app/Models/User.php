@@ -20,11 +20,17 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'fname',
+        'mname',
+        'lname',
         'matric_no',
+        'staff_number',
         'email',
         'password',
     ];
+
+    /** @var list<string> */
+    protected $appends = ['name'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -47,5 +53,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getNameAttribute(): string
+    {
+        return implode(' ', array_filter([
+            $this->fname,
+            $this->mname,
+            $this->lname,
+        ], fn ($part) => is_string($part) && trim($part) !== ''));
     }
 }

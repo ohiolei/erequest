@@ -20,23 +20,37 @@ class UserManagementController extends Controller
     {
         $search = trim((string) $request->query('search', ''));
         $roleFilter = (string) $request->query('role', '');
+        $tab = (string) $request->query('tab', 'students');
 
         $users = User::query()
             ->with(['roles:id,name,guard_name', 'permissions:id,name,guard_name'])
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('matric_no', 'like', "%{$search}%");
+                $query->where('email', 'like', "%{$search}%")
+                    ->orWhere('matric_no', 'like', "%{$search}%")
+                    ->orWhere('staff_number', 'like', "%{$search}%");
+
+                foreach (preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY) as $term) {
+                    $query->orWhere('fname', 'like', "%{$term}%")
+                        ->orWhere('mname', 'like', "%{$term}%")
+                        ->orWhere('lname', 'like', "%{$term}%");
+                }
             }))
             ->when($roleFilter !== '', fn ($query) => $query->whereHas('roles', fn ($roles) => $roles->where('roles.name', $roleFilter)->where('roles.guard_name', 'web')))
-            ->orderBy('name')
-            ->paginate(5, ['*'], 'users_page')
+            ->when($tab === 'students', fn ($query) => $query->whereHas('roles', fn ($roles) => $roles->where('name', 'student')->where('guard_name', 'web')))
+            ->when($tab === 'staff', fn ($query) => $query->whereDoesntHave('roles', fn ($roles) => $roles->where('name', 'student')->where('guard_name', 'web')))
+            ->orderBy('fname')
+            ->orderBy('lname')
+            ->paginate(10, ['*'], 'users_page')
             ->withQueryString()
             ->through(fn (User $user) => [
                 'id' => $user->id,
                 'name' => $user->name,
+                'fname' => $user->fname,
+                'mname' => $user->mname,
+                'lname' => $user->lname,
                 'email' => $user->email,
                 'matric_no' => $user->matric_no,
+                'staff_number' => $user->staff_number,
                 'roles' => $user->roles->pluck('name')->values(),
                 'permissions' => $user->permissions->pluck('name')->values(),
                 'email_verified' => $user->email_verified_at !== null,
@@ -48,6 +62,7 @@ class UserManagementController extends Controller
             'roles' => Role::query()->where('guard_name', 'web')->orderBy('name')->pluck('name'),
             'permissions' => Permission::query()->where('guard_name', 'web')->orderBy('name')->pluck('name'),
             'filters' => ['search' => $search, 'role' => $roleFilter],
+            'tab' => $tab,
         ]);
     }
 
@@ -56,9 +71,12 @@ class UserManagementController extends Controller
         $this->normalizeUserInput($request);
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'fname' => ['required', 'string', 'max:100'],
+            'mname' => ['nullable', 'string', 'max:100'],
+            'lname' => ['required', 'string', 'max:100'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'matric_no' => ['nullable', 'string', 'max:50', 'unique:users,matric_no'],
+            'staff_number' => ['nullable', 'string', 'max:50', 'unique:users,staff_number'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'roles' => ['required', 'array', 'min:1'],
             'roles.*' => ['string', 'distinct', Rule::exists('roles', 'name')->where('guard_name', 'web')],
@@ -66,10 +84,19 @@ class UserManagementController extends Controller
             'permissions.*' => ['string', 'distinct', Rule::exists('permissions', 'name')->where('guard_name', 'web')],
         ]);
 
+        $request->user()->can('create staff') || abort(403);
+
+        if (in_array('student', $validated['roles'], true)) {
+            throw ValidationException::withMessages(['roles' => 'Student accounts cannot be created from here.']);
+        }
+
         $user = User::create([
-            'name' => $validated['name'],
+            'fname' => trim($validated['fname']),
+            'mname' => filled($validated['mname'] ?? null) ? trim($validated['mname']) : null,
+            'lname' => trim($validated['lname']),
             'email' => $validated['email'],
             'matric_no' => $validated['matric_no'] ?? null,
+            'staff_number' => $validated['staff_number'] ?? null,
             'password' => Hash::make($validated['password']),
         ]);
         $user->syncRoles($validated['roles']);
@@ -83,15 +110,25 @@ class UserManagementController extends Controller
         $this->normalizeUserInput($request);
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'fname' => ['required', 'string', 'max:100'],
+            'mname' => ['nullable', 'string', 'max:100'],
+            'lname' => ['nullable', 'string', 'max:100'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'matric_no' => ['nullable', 'string', 'max:50', Rule::unique('users', 'matric_no')->ignore($user->id)],
+            'staff_number' => ['nullable', 'string', 'max:50', Rule::unique('users', 'staff_number')->ignore($user->id)],
         ]);
 
+        if ($user->hasRole('student') && ! $request->user()->can('edit students')) {
+            throw ValidationException::withMessages(['user' => 'You do not have permission to edit student accounts.']);
+        }
+
         $user->update([
-            'name' => $validated['name'],
+            'fname' => trim($validated['fname']),
+            'mname' => filled($validated['mname'] ?? null) ? trim($validated['mname']) : null,
+            'lname' => trim($validated['lname']),
             'email' => $validated['email'],
             'matric_no' => $validated['matric_no'] ?? null,
+            'staff_number' => $validated['staff_number'] ?? null,
         ]);
 
         return back();
@@ -149,14 +186,19 @@ class UserManagementController extends Controller
     {
         $normalized = [];
 
-        if ($request->exists('name')) {
-            $normalized['name'] = trim((string) $request->input('name'));
+        foreach (['fname', 'mname', 'lname'] as $field) {
+            if ($request->exists($field)) {
+                $normalized[$field] = $request->filled($field) ? trim((string) $request->input($field)) : null;
+            }
         }
         if ($request->exists('email')) {
             $normalized['email'] = strtolower(trim((string) $request->input('email')));
         }
         if ($request->exists('matric_no')) {
             $normalized['matric_no'] = $request->filled('matric_no') ? strtoupper(trim((string) $request->input('matric_no'))) : null;
+        }
+        if ($request->exists('staff_number')) {
+            $normalized['staff_number'] = $request->filled('staff_number') ? strtoupper(trim((string) $request->input('staff_number'))) : null;
         }
 
         $request->merge($normalized);
