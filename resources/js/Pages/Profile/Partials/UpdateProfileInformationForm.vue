@@ -15,12 +15,12 @@ defineProps({
 });
 
 const page = usePage();
-const user = page.props.value.user;
+const user = page.props.auth.user;
 
 const form = useForm({
-    fname: user.fname || '',
-    mname: user.mname || '',
-    lname: user.lname || '',
+    fname: user?.fname || '',
+    mname: user?.mname || '',
+    lname: user?.lname || '',
 });
 </script>
 

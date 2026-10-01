@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\ActivityService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -14,6 +15,8 @@ use Spatie\Permission\Models\Role;
 
 class RoleManagementController extends Controller
 {
+    public function __construct(protected ActivityService $activities) {}
+
     public function index(): Response
     {
         return Inertia::render('Admin/Roles/Index', [
@@ -62,6 +65,12 @@ class RoleManagementController extends Controller
             'guard_name' => 'web',
         ]);
 
+        $permission = Permission::where('name', $validated['name'])->where('guard_name', 'web')->first();
+
+        $this->activities->log('created_permission', 'Created permission', Permission::class, $permission->id, [
+            'name' => $validated['name'],
+        ]);
+
         return back();
     }
 
@@ -81,6 +90,10 @@ class RoleManagementController extends Controller
 
         $permission->update(['name' => $validated['name']]);
 
+        $this->activities->log('updated_permission', 'Updated permission', Permission::class, $permission->id, [
+            'name' => $validated['name'],
+        ]);
+
         return back();
     }
 
@@ -97,6 +110,10 @@ class RoleManagementController extends Controller
         }
 
         $permission->delete();
+
+        $this->activities->log('deleted_permission', 'Deleted permission', Permission::class, $permission->id, [
+            'name' => $permission->name,
+        ]);
 
         return back();
     }
@@ -116,6 +133,11 @@ class RoleManagementController extends Controller
             'guard_name' => 'web',
         ]);
         $role->syncPermissions($validated['permissions'] ?? []);
+
+        $this->activities->log('created_role', 'Created role', Role::class, $role->id, [
+            'name' => $validated['name'],
+            'permissions' => $validated['permissions'] ?? [],
+        ]);
 
         return back();
     }
@@ -144,6 +166,11 @@ class RoleManagementController extends Controller
         $role->update(['name' => $validated['name']]);
         $role->syncPermissions(array_unique($permissions));
 
+        $this->activities->log('updated_role', 'Updated role', Role::class, $role->id, [
+            'name' => $validated['name'],
+            'permissions' => array_unique($permissions),
+        ]);
+
         return back();
     }
 
@@ -160,6 +187,10 @@ class RoleManagementController extends Controller
         }
 
         $role->delete();
+
+        $this->activities->log('deleted_role', 'Deleted role', Role::class, $role->id, [
+            'name' => $role->name,
+        ]);
 
         return back();
     }

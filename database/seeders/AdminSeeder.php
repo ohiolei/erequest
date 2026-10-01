@@ -17,7 +17,7 @@ class AdminSeeder extends Seeder
                 'fname' => 'Admin',
                 'mname' => null,
                 'lname' => null,
-                'staff_number' => strtoupper('pss2022'),
+                'staff_number' => strtoupper('pss0001'),
                 'email_verified_at' => now(),
                 'password' => Hash::make('12345'),
             ],

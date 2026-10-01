@@ -18,8 +18,15 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function (Request $request) {
+    $recentActivities = \App\Models\Activity::query()
+        ->where('user_id', $request->user()->id)
+        ->latest()
+        ->limit(10)
+        ->get();
+
     return Inertia::render('Dashboard', [
         'isAdmin' => $request->user()->hasRole('admin'),
+        'recentActivities' => $recentActivities,
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 

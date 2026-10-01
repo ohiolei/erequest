@@ -8,11 +8,24 @@ defineProps({
         type: Boolean,
         required: true,
     },
+    recentActivities: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 const canManagePortal = computed(() => page.props.auth.canManageUsers || page.props.auth.canManageRoles);
+
+const formatActivityDate = (value) => {
+    if (!value) return '';
+    const date = new Date(value);
+    return date.toLocaleString('en-NG', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+    });
+};
 </script>
 
 <template>
@@ -89,6 +102,24 @@ const canManagePortal = computed(() => page.props.auth.canManageUsers || page.pr
                     </div>
                 </dl>
             </section>
-            </div>
+
+            <section v-if="recentActivities.length" aria-labelledby="activity-heading" class="border-t border-gray-200 pt-5 dark:border-gray-700">
+                <h2 id="activity-heading" class="text-base font-semibold text-gray-900 dark:text-white">Recent activity</h2>
+                <ul class="mt-4 space-y-3">
+                    <li v-for="activity in recentActivities" :key="activity.id" class="flex items-start gap-3 rounded-md border border-gray-200 bg-white p-3 text-sm dark:border-gray-700 dark:bg-gray-800">
+                        <div class="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-purple-500" aria-hidden="true"></div>
+                        <div class="min-w-0">
+                            <p class="text-gray-900 dark:text-gray-100">
+                                <span class="font-medium capitalize">{{ activity.action.replace('_', ' ') }}</span>
+                                <span class="text-gray-500 dark:text-gray-400"> — {{ activity.description }}</span>
+                            </p>
+                            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                {{ formatActivityDate(activity.created_at) }}
+                            </p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+        </div>
     </AuthenticatedLayout>
 </template>

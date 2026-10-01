@@ -16,6 +16,8 @@ use Spatie\Permission\Models\Role;
 
 class UserManagementController extends Controller
 {
+    public function __construct(protected ActivityService $activities) {}
+
     public function index(Request $request): Response
     {
         $search = trim((string) $request->query('search', ''));
@@ -102,6 +104,11 @@ class UserManagementController extends Controller
         $user->syncRoles($validated['roles']);
         $user->syncPermissions($validated['permissions'] ?? []);
 
+        $this->activities->log('created_user', 'Created user account', User::class, $user->id, [
+            'email' => $user->email,
+            'roles' => $validated['roles'],
+        ]);
+
         return to_route('admin.users.index');
     }
 
@@ -131,6 +138,10 @@ class UserManagementController extends Controller
             'staff_number' => $validated['staff_number'] ?? null,
         ]);
 
+        $this->activities->log('updated_user', 'Updated user profile', User::class, $user->id, [
+            'email' => $user->email,
+        ]);
+
         return back();
     }
 
@@ -146,6 +157,10 @@ class UserManagementController extends Controller
         }
 
         $user->syncRoles($validated['roles']);
+
+        $this->activities->log('updated_user_roles', 'Updated user roles', User::class, $user->id, [
+            'roles' => $validated['roles'],
+        ]);
 
         return back();
     }
@@ -164,6 +179,10 @@ class UserManagementController extends Controller
 
         $user->syncPermissions($validated['permissions']);
 
+        $this->activities->log('updated_user_permissions', 'Updated user direct permissions', User::class, $user->id, [
+            'permissions' => $validated['permissions'],
+        ]);
+
         return back();
     }
 
@@ -178,6 +197,10 @@ class UserManagementController extends Controller
         }
 
         $user->delete();
+
+        $this->activities->log('deleted_user', 'Deleted user account', User::class, $user->id, [
+            'email' => $user->email,
+        ]);
 
         return back();
     }

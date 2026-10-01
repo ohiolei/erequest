@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ActivityService;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
@@ -13,20 +14,18 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
+    public function __construct(protected ActivityService $activities) {}
+
     public function edit(Request $request): Response
     {
+        $this->activities->log('viewed_profile', 'Viewed profile page');
+
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
@@ -37,12 +36,11 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
+        $this->activities->log('updated_profile', 'Updated profile information');
+
         return Redirect::route('profile.edit');
     }
 
-    /**
-     * Delete the user's account.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validate([
@@ -50,6 +48,8 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        $this->activities->log('deleted_account', 'Deleted account');
 
         Auth::logout();
 

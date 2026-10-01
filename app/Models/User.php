@@ -63,4 +63,9 @@ class User extends Authenticatable
             $this->lname,
         ], fn ($part) => is_string($part) && trim($part) !== ''));
     }
+
+    public function activities()
+    {
+        return $this->hasMany(Activity::class);
+    }
 }
