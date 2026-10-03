@@ -8,6 +8,8 @@ import AssignUserRolesModal from './Partials/AssignUserRolesModal.vue';
 import CreateUserModal from './Partials/CreateUserModal.vue';
 import DeleteUserModal from './Partials/DeleteUserModal.vue';
 import EditUserModal from './Partials/EditUserModal.vue';
+import ResetUserPasswordModal from './Partials/ResetUserPasswordModal.vue';
+import ResetUserTwoFactorModal from './Partials/ResetUserTwoFactorModal.vue';
 
 const props = defineProps({
     users: {
@@ -242,6 +244,24 @@ const paginationLabel = (label) => label
                                         >
                                             Delete account
                                         </button>
+                                        <button
+                                            type="button"
+                                            :disabled="user.id === page.props.auth.user.id"
+                                            :title="user.id === page.props.auth.user.id ? 'You cannot reset your own password from here' : 'Reset password to surname'"
+                                            class="block w-full px-4 py-2 text-left text-sm text-orange-700 hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-orange-300 dark:hover:bg-orange-950/30"
+                                            @click="openUserModal('reset-password', user)"
+                                        >
+                                            Reset password
+                                        </button>
+                                        <button
+                                            type="button"
+                                            :disabled="user.id === page.props.auth.user.id"
+                                            :title="user.id === page.props.auth.user.id ? 'You cannot reset your own 2FA from here' : 'Reset 2FA'"
+                                            class="block w-full px-4 py-2 text-left text-sm text-orange-700 hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-orange-300 dark:hover:bg-orange-950/30"
+                                            @click="openUserModal('reset-2fa', user)"
+                                        >
+                                            Reset 2FA
+                                        </button>
                                     </template>
                                 </Dropdown>
                             </td>
@@ -307,6 +327,18 @@ const paginationLabel = (label) => label
         />
         <DeleteUserModal
             :show="activeModal === 'delete'"
+            :user="selectedUser"
+            @close="closeModal"
+            @saved="userSaved"
+        />
+        <ResetUserPasswordModal
+            :show="activeModal === 'reset-password'"
+            :user="selectedUser"
+            @close="closeModal"
+            @saved="userSaved"
+        />
+        <ResetUserTwoFactorModal
+            :show="activeModal === 'reset-2fa'"
             :user="selectedUser"
             @close="closeModal"
             @saved="userSaved"

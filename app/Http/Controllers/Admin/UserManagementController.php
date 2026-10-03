@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ActivityService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -203,6 +204,50 @@ class UserManagementController extends Controller
         ]);
 
         return back();
+    }
+
+    public function resetPassword(Request $request, User $user): RedirectResponse
+    {
+        if ($user->is($request->user())) {
+            throw ValidationException::withMessages(['user' => 'You cannot reset your own password from here.']);
+        }
+
+        if ($user->can('manage users') && ! $this->hasOtherUserManager($user)) {
+            throw ValidationException::withMessages(['user' => 'The last user manager cannot have their password reset.']);
+        }
+
+        $newPassword = $user->lname ?: 'password';
+
+        $user->password = Hash::make($newPassword);
+        $user->save();
+
+        $this->activities->log('reset_user_password', 'Reset user password', User::class, $user->id, [
+            'email' => $user->email,
+        ]);
+
+        return back()->with('status', "Password reset to: {$newPassword}");
+    }
+
+    public function resetTwoFactor(Request $request, User $user): RedirectResponse
+    {
+        if ($user->is($request->user())) {
+            throw ValidationException::withMessages(['user' => 'You cannot reset your own 2FA from here.']);
+        }
+
+        if ($user->can('manage users') && ! $this->hasOtherUserManager($user)) {
+            throw ValidationException::withMessages(['user' => 'The last user manager cannot have their 2FA reset.']);
+        }
+
+        $user->two_factor_secret = null;
+        $user->two_factor_recovery_codes = null;
+        $user->two_factor_confirmed_at = null;
+        $user->save();
+
+        $this->activities->log('reset_user_2fa', 'Reset user 2FA', User::class, $user->id, [
+            'email' => $user->email,
+        ]);
+
+        return back()->with('status', '2FA has been reset for this user.');
     }
 
     private function normalizeUserInput(Request $request): void

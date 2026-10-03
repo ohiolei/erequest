@@ -59,6 +59,8 @@ Route::middleware(['auth', 'can:manage users'])
         Route::patch('/users/{user}/roles', [UserManagementController::class, 'updateRoles'])->name('users.roles.update');
         Route::patch('/users/{user}/permissions', [UserManagementController::class, 'updatePermissions'])->name('users.permissions.update');
         Route::delete('/users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+        Route::post('/users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
+        Route::post('/users/{user}/reset-2fa', [UserManagementController::class, 'resetTwoFactor'])->name('users.reset-2fa');
     });
 
 require __DIR__.'/auth.php';
