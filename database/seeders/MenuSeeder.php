@@ -55,6 +55,24 @@ class MenuSeeder extends Seeder
                 'permission' => null,
                 'sort_order' => 30,
             ],
+            [
+                'key' => 'student_chats',
+                'label' => 'My Chats',
+                'route' => 'chats.index',
+                'parent_key' => null,
+                'roles' => ['student'],
+                'permission' => null,
+                'sort_order' => 40,
+            ],
+            [
+                'key' => 'admin_chats',
+                'label' => 'Support Chats',
+                'route' => 'admin.chats.index',
+                'parent_key' => 'central_is',
+                'roles' => null,
+                'permission' => 'atteend to complains',
+                'sort_order' => 30,
+            ],
         ];
 
         foreach ($items as $item) {

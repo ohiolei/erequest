@@ -11,40 +11,40 @@ defineProps({
 
 const quickPortals = ref([
     {
-        title: 'Student Portal',
-        description: 'Course registration, fee payment, result checking, and academic transcript access.',
-        badge: 'Primary Portal',
-        icon: 'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222',
-        href: '#'
-    },
-    {
-        title: 'Admissions Hub',
-        description: 'Post-UTME screening application, admission list verification, and acceptance processing.',
-        badge: 'Prospective',
+        title: 'Request Transcript',
+        description: 'Submit official academic transcript requests for employment, further studies, or personal use.',
+        badge: 'Transcripts',
         icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
         href: '#'
     },
     {
-        title: 'E-Learning & LMS',
-        description: 'Virtual lectures, continuous assessments, course modules, and online submission nodes.',
-        badge: 'Academic',
-        icon: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+        title: 'Certificate Processing',
+        description: 'Apply for degree certificates, supplementary certificates, and replacement documents.',
+        badge: 'Certificates',
+        icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
         href: '#'
     },
     {
-        title: 'CBT Assessment Portal',
-        description: 'Online examination platform, continuous assessment schedules, and instant test evaluation.',
-        badge: 'Examinations',
+        title: 'Track Requests',
+        description: 'Monitor the status and progress of your certificate and transcript applications in real time.',
+        badge: 'Tracking',
         icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
+        href: '#'
+    },
+    {
+        title: 'Talk to an admin desk officer',
+        description: 'desk personnel for helping you with what ever problems you have',
+        badge: 'Administration',
+        icon: 'M17 20h5v-2a4 4 0 00-5.5-3.72M9 20H2v-2a4 4 0 015.5-3.72M16 3.13a4 4 0 010 7.75M8 3.13a4 4 0 000 7.75M12 14a4 4 0 100-8 4 4 0 000 8z',
         href: '#'
     }
 ]);
 
 const stats = ref([
-    { number: '1st', label: 'Specialized University of Education in Nigeria' },
-    { number: '5+', label: 'Academic Colleges & Schools' },
-    { number: '20,000+', label: 'Active Scholars & Educators' },
-    { number: '100%', label: 'ICT & Pedagogy Integrated Curriculum' },
+    { number: 'Fast', label: 'Certificate & transcript processing' },
+    { number: 'Online', label: 'Request submission and tracking' },
+    { number: 'Secure', label: 'Document approval workflow' },
+    { number: '24/7', label: 'Access to request status' },
 ]);
 </script>
 
@@ -66,7 +66,7 @@ const stats = ref([
                     <img src="/assets/images/logo1.png" alt="" class="h-10 w-10 shrink-0 object-contain" />
                     <div>
                         <span class="text-lg font-bold text-white block leading-tight">Tasfued E Request</span>
-                        <span class="text-[10px] uppercase text-emerald-400 font-semibold">TASFUED PORTAL</span>
+                        <span class="text-[10px] uppercase text-emerald-400 font-semibold">Certificate & Transcript Processing</span>
                     </div>
                 </div>
 
@@ -106,14 +106,14 @@ const stats = ref([
                 </div>
                 
                 <h1 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-[1.1]">
-                    Excellence in Pedagogy, <br />
+                    Certificate & Transcript <br />
                     <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-                        Innovation & Leadership.
+                        Processing Hub.
                     </span>
                 </h1>
 
                 <p class="mt-6 text-lg sm:text-xl text-slate-400 leading-relaxed max-w-2xl">
-                    Nigeria’s premier specialized university of education—combining academic rigorous teaching with modern vocational and technological skills.
+                    Request, track, and manage official academic certificates and transcripts online.
                 </p>
 
                 <div class="mt-8 flex flex-wrap items-center gap-4">
@@ -121,7 +121,7 @@ const stats = ref([
                         href="#portals"
                         class="px-6 py-3.5 rounded-xl bg-emerald-500 text-slate-950 font-semibold hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/25 flex items-center gap-2"
                     >
-                        Access Student Services
+                        Start a Request
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                         </svg>
@@ -130,7 +130,7 @@ const stats = ref([
                         href="#about"
                         class="px-6 py-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-semibold hover:bg-slate-800/80 hover:text-white transition-all"
                     >
-                        University Overview
+                        Track Existing Request
                     </a>
                 </div>
             </section>
@@ -151,8 +151,8 @@ const stats = ref([
             <section id="portals" class="py-20">
                 <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
                     <div>
-                        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Essential Digital Portals</h2>
-                        <p class="text-slate-400 text-sm mt-1">Direct access nodes for students, staff, and applicants.</p>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Document Services</h2>
+                        <p class="text-slate-400 text-sm mt-1">Submit and manage certificate and transcript requests.</p>
                     </div>
                 </div>
 
@@ -198,6 +198,7 @@ const stats = ref([
             <footer class="py-12 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
                 <div>
                     <p>© TASFUED - Tai Solarin Federal University of Education, Ijagun, Ogun State.</p>
+                    <p class="mt-1">Certificate & Transcript Processing System</p>
                 </div>
                 <div class="flex items-center gap-6">
                     <span v-if="laravelVersion">Laravel v{{ laravelVersion }}</span>

@@ -15,7 +15,10 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             MenuSeeder::class,
             AdminSeeder::class,
-            StudentSeeder::class,
+            RegistryUserSeeder::class,
+            BursaryUserSeeder::class,
+            ExamsRecordsUserSeeder::class,
+            StudentUserSeeder::class,
         ]);
     }
 }

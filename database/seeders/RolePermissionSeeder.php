@@ -24,6 +24,10 @@ class RolePermissionSeeder extends Seeder
             'manage roles',
             'edit students',
             'create staff',
+            'atteend to complains',
+            'bursary access',
+            'exams&records access',
+            'registry access',
         ];
 
         foreach ($permissions as $permission) {
@@ -32,6 +36,21 @@ class RolePermissionSeeder extends Seeder
 
         $roles = [
             'admin' => $permissions,
+            'registry' => [
+                'view dashboard',
+                'atteend to complains',
+                'registry access',
+            ],
+            'busary' => [
+                'view dashboard',
+                'atteend to complains',
+                'bursary access',
+            ],
+            'exams&records' => [
+                'view dashboard',
+                'atteend to complains',
+                'exams&records access',
+            ],
             'student' => [
                 'view dashboard',
                 'create requests',

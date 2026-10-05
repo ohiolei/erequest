@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\RoleManagementController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -62,5 +63,20 @@ Route::middleware(['auth', 'can:manage users'])
         Route::post('/users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
         Route::post('/users/{user}/reset-2fa', [UserManagementController::class, 'resetTwoFactor'])->name('users.reset-2fa');
     });
+
+Route::middleware('auth')->prefix('chats')->name('chats.')->group(function () {
+    Route::get('/', [ChatController::class, 'index'])->name('index');
+    Route::get('/create', [ChatController::class, 'create'])->name('create');
+    Route::post('/', [ChatController::class, 'store'])->name('store');
+    Route::get('/{chat}', [ChatController::class, 'show'])->name('show');
+    Route::post('/{chat}/messages', [ChatController::class, 'sendMessage'])->name('messages.store');
+});
+
+Route::middleware(['auth'])->prefix('admin/chats')->name('admin.chats.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\ChatController::class, 'index'])->name('index');
+    Route::get('/{chat}', [\App\Http\Controllers\Admin\ChatController::class, 'show'])->name('show');
+    Route::post('/{chat}/messages', [\App\Http\Controllers\Admin\ChatController::class, 'sendMessage'])->name('messages.store');
+    Route::patch('/{chat}/status', [\App\Http\Controllers\Admin\ChatController::class, 'updateStatus'])->name('status.update');
+});
 
 require __DIR__.'/auth.php';
