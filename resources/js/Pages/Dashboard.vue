@@ -12,6 +12,10 @@ defineProps({
         type: Array,
         default: () => [],
     },
+    analytics: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const page = usePage();
@@ -57,7 +61,7 @@ const formatActivityDate = (value) => {
                 <div class="flex flex-wrap gap-3">
                     <Link
                         v-if="page.props.auth.canManageUsers"
-                        :href="route('admin.users.index')"
+                        :href="route('core.user_manager.users.index')"
                         class="inline-flex items-center gap-2 rounded-md bg-purple-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-800"
                     >
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -67,7 +71,7 @@ const formatActivityDate = (value) => {
                     </Link>
                     <Link
                         v-if="page.props.auth.canManageRoles"
-                        :href="route('admin.roles.index')"
+                        :href="route('core.acl.roles.index')"
                         class="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                     >
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -102,6 +106,33 @@ const formatActivityDate = (value) => {
                     >
                         Update profile
                     </Link>
+                </div>
+            </section>
+
+            <section v-if="Object.keys(analytics).length" aria-labelledby="analytics-heading" class="border-t border-gray-200 pt-5 dark:border-gray-700">
+                <h2 id="analytics-heading" class="text-base font-semibold text-gray-900 dark:text-white">Analytics overview</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Your permission-based summary of activity across the system.</p>
+                <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div v-if="analytics.chats !== null" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Support chats</p>
+                        <p class="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">{{ analytics.chats }}</p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ analytics.chats_open }} open &middot; {{ analytics.chats_in_progress }} in progress</p>
+                    </div>
+                    <div v-if="analytics.students !== null" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Students</p>
+                        <p class="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">{{ analytics.students.total }}</p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ analytics.students.active }} verified</p>
+                    </div>
+                    <div v-if="analytics.staff !== null" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Staff</p>
+                        <p class="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">{{ analytics.staff.total }}</p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Across all departments</p>
+                    </div>
+                    <div v-if="analytics.requests !== null" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+                        <p class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Requests</p>
+                        <p class="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">{{ analytics.requests.total }}</p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ analytics.requests.pending }} pending &middot; {{ analytics.requests.approved }} approved</p>
+                    </div>
                 </div>
             </section>
 

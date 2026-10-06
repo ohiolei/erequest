@@ -35,7 +35,7 @@ watch(() => [props.show, props.defaultRoles], ([show, defaultRoles]) => {
 });
 
 const submit = () => {
-    form.post(route('admin.users.store'), {
+    form.post(route('core.user_manager.users.store'), {
         preserveScroll: true,
         onSuccess: () => {
             emit('saved', 'User created.');

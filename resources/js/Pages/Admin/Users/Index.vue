@@ -50,7 +50,7 @@ const switchTab = (tab) => {
     const query = { tab };
     if (filters.search.trim()) query.search = filters.search.trim();
 
-    router.get(route('admin.users.index'), query, {
+    router.get(route('core.user_manager.users.index'), query, {
         preserveState: true,
         preserveScroll: true,
         replace: true,
@@ -62,7 +62,7 @@ const filterUsers = () => {
     if (filters.search.trim()) query.search = filters.search.trim();
     if (filters.role) query.role = filters.role;
 
-    router.get(route('admin.users.index'), query, {
+    router.get(route('core.user_manager.users.index'), query, {
         preserveState: true,
         preserveScroll: true,
         replace: true,

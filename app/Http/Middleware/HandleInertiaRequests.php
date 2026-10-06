@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Chat;
 use App\Models\MenuItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -31,18 +32,57 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
+        $chatUnreadCount = 0;
+        $chatRoute = null;
+
+        if ($user) {
+            if ($user->hasRole('student')) {
+                $chatUnreadCount = Chat::query()
+                    ->where('user_id', $user->id)
+                    ->whereHas('messages', fn ($query) => $query->where('user_id', '!=', $user->id)->where('is_read', false))
+                    ->count();
+
+                $chatRoute = route('chats.index');
+            } else {
+                $allowedCategories = [];
+                if ($user->can('registry access')) {
+                    $allowedCategories[] = 'registry';
+                }
+                if ($user->can('bursary access')) {
+                    $allowedCategories[] = 'bursary';
+                }
+                if ($user->can('exams&records access')) {
+                    $allowedCategories[] = 'exams_records';
+                }
+                if ($user->can('atteend to complains')) {
+                    $allowedCategories[] = 'complaints';
+                }
+
+                if (! empty($allowedCategories)) {
+                    $chatUnreadCount = Chat::query()
+                        ->whereIn('category', $allowedCategories)
+                        ->whereHas('messages', fn ($query) => $query->where('user_id', '!=', $user->id)->where('is_read', false))
+                        ->count();
+                }
+
+                $chatRoute = route('admin.chats.index');
+            }
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
-                'canManageUsers' => $request->user()?->can('manage users') ?? false,
-                'canManageRoles' => $request->user()?->can('manage roles') ?? false,
-                'canEditStudents' => $request->user()?->can('edit students') ?? false,
-                'canCreateStaff' => $request->user()?->can('create staff') ?? false,
+                'user' => $user,
+                'canManageUsers' => $user?->can('manage users') ?? false,
+                'canManageRoles' => $user?->can('manage roles') ?? false,
+                'canEditStudents' => $user?->can('edit students') ?? false,
+                'canCreateStaff' => $user?->can('create staff') ?? false,
             ],
-            'sidebar_menu' => fn () => $request->user()
-                ? $this->sidebarMenu($request)
-                : [],
+            'sidebar_menu' => fn () => $user ? $this->sidebarMenu($request) : [],
+            'chat_unread_count' => $chatUnreadCount,
+            'chat_route' => $chatRoute,
         ];
     }
 

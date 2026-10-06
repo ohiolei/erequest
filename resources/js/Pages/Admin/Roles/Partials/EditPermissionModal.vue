@@ -21,7 +21,7 @@ watch(() => [props.show, props.permission], ([show, permission]) => {
 });
 
 const submit = () => {
-    form.patch(route('admin.permissions.update', props.permission.id), {
+    form.patch(route('core.acl.permissions.update', props.permission.id), {
         preserveScroll: true,
         onSuccess: () => {
             emit('saved', 'Permission updated.');

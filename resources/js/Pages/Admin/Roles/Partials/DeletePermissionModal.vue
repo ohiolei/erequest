@@ -18,7 +18,7 @@ const canDelete = computed(() => props.permission
 const submit = () => {
     if (!canDelete.value) return;
 
-    form.delete(route('admin.permissions.destroy', props.permission.id), {
+    form.delete(route('core.acl.permissions.destroy', props.permission.id), {
         preserveScroll: true,
         onSuccess: () => {
             emit('saved', 'Permission deleted.');

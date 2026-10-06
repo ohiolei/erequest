@@ -10,14 +10,14 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(`/admin/chats/${props.chat.id}/messages`, {
+    form.post(route('admin.chats.messages.store', props.chat.id), {
         onSuccess: () => form.reset('message'),
         preserveScroll: true,
     });
 };
 
 const updateStatus = () => {
-    form.post(`/admin/chats/${props.chat.id}/status`, {
+    form.patch(route('admin.chats.status.update', props.chat.id), {
         preserveScroll: true,
     });
 };
@@ -64,7 +64,7 @@ const getInitials = (name) => {
                         <option value="resolved">Resolved</option>
                         <option value="closed">Closed</option>
                     </select>
-                    <Link href="/admin/chats" class="text-xs text-emerald-700 hover:text-emerald-500 dark:text-emerald-400">Back</Link>
+                    <Link :href="route('admin.chats.index')" class="text-xs text-emerald-700 hover:text-emerald-500 dark:text-emerald-400">Back</Link>
                 </div>
             </div>
 

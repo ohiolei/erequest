@@ -11,7 +11,7 @@ const emit = defineEmits(['close', 'saved']);
 const form = useForm({});
 
 const submit = () => {
-    form.post(route('admin.users.reset-password', props.user.id), {
+    form.post(route('core.user_manager.users.reset-password', props.user.id), {
         preserveScroll: true,
         onSuccess: () => {
             emit('saved', 'Password has been reset.');

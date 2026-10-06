@@ -22,7 +22,7 @@ watch(() => [props.show, props.user], ([show, user]) => {
 });
 
 const submit = () => {
-    form.patch(route('admin.users.permissions.update', props.user.id), {
+    form.patch(route('core.user_manager.users.permissions.update', props.user.id), {
         preserveScroll: true,
         onSuccess: () => {
             emit('saved', 'Direct permissions updated.');

@@ -11,7 +11,7 @@ const emit = defineEmits(['close', 'saved']);
 const form = useForm({});
 
 const submit = () => {
-    form.delete(route('admin.roles.destroy', props.role.id), {
+    form.delete(route('core.acl.roles.destroy', props.role.id), {
         preserveScroll: true,
         onSuccess: () => {
             emit('saved', 'Role deleted.');

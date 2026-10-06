@@ -11,7 +11,7 @@ const emit = defineEmits(['close', 'saved']);
 const form = useForm({});
 
 const submit = () => {
-    form.post(route('admin.users.reset-2fa', props.user.id), {
+    form.post(route('core.user_manager.users.reset-2fa', props.user.id), {
         preserveScroll: true,
         onSuccess: () => {
             emit('saved', '2FA has been reset for this user.');

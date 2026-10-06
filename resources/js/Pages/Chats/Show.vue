@@ -10,7 +10,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(`/chats/${props.chat.id}/messages`, {
+    form.post(route('chats.messages.store', props.chat.id), {
         onSuccess: () => form.reset('message'),
         preserveScroll: true,
     });
@@ -52,7 +52,7 @@ const getInitials = (name) => {
                     <span :class="['rounded-full px-2.5 py-0.5 text-xs font-medium capitalize', statusClass(chat.status)]">
                         {{ chat.status.replace('_', ' ') }}
                     </span>
-                    <Link href="/chats" class="text-xs text-emerald-700 hover:text-emerald-500 dark:text-emerald-400">Back</Link>
+                    <Link :href="route('chats.index')" class="text-xs text-emerald-700 hover:text-emerald-500 dark:text-emerald-400">Back</Link>
                 </div>
             </div>
 

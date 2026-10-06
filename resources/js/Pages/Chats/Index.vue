@@ -16,7 +16,7 @@ defineProps({ chats: Object, filters: Object });
                         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">My Support Chats</h1>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Track your conversations with support departments.</p>
                     </div>
-                    <Link href="/chats/create" class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500">New Chat</Link>
+                    <Link :href="route('chats.create')" class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500">New Chat</Link>
                 </div>
 
                 <div v-if="chats.data.length === 0" class="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center dark:border-gray-700 dark:bg-gray-800">
@@ -58,7 +58,7 @@ defineProps({ chats: Object, filters: Object });
                                 <td class="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-300">{{ chat.assigned_to || '—' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-gray-500 dark:text-gray-400">{{ chat.last_message_at }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-right">
-                                    <Link :href="`/chats/${chat.id}`" class="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500">
+                                    <Link :href="route('chats.show', chat.id)" class="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500">
                                         Open
                                         <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

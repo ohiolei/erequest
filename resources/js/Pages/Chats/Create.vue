@@ -12,7 +12,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post('/chats', {
+    form.post(route('chats.store'), {
         onSuccess: () => form.reset(),
     });
 };
@@ -26,7 +26,7 @@ const submit = () => {
             <div class="mx-auto max-w-2xl px-4 sm:px-6">
                 <div class="mb-6 flex items-center justify-between">
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">New Support Chat</h1>
-                    <Link href="/chats" class="text-sm text-emerald-700 hover:text-emerald-500">Back to chats</Link>
+                    <Link :href="route('chats.index')" class="text-sm text-emerald-700 hover:text-emerald-500">Back to chats</Link>
                 </div>
 
                 <form @submit.prevent="submit" class="space-y-5 rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
@@ -55,7 +55,7 @@ const submit = () => {
                     </div>
 
                     <div class="flex items-center justify-end gap-3">
-                        <Link href="/chats" class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</Link>
+                        <Link :href="route('chats.index')" class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</Link>
                         <button type="submit" :disabled="form.processing" class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-60">Start Chat</button>
                     </div>
                 </form>

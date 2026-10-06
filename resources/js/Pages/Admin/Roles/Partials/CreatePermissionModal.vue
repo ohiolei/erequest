@@ -18,7 +18,7 @@ watch(() => props.show, (show) => {
 });
 
 const submit = () => {
-    form.post(route('admin.permissions.store'), {
+    form.post(route('core.acl.permissions.store'), {
         preserveScroll: true,
         onSuccess: () => {
             emit('saved', 'Permission created.');

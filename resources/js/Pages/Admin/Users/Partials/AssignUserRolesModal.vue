@@ -22,7 +22,7 @@ watch(() => [props.show, props.user], ([show, user]) => {
 });
 
 const submit = () => {
-    form.patch(route('admin.users.roles.update', props.user.id), {
+    form.patch(route('core.user_manager.users.roles.update', props.user.id), {
         preserveScroll: true,
         onSuccess: () => {
             emit('saved', 'User roles updated.');

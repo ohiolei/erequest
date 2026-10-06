@@ -11,7 +11,7 @@ const emit = defineEmits(['close', 'saved']);
 const form = useForm({});
 
 const submit = () => {
-    form.delete(route('admin.users.destroy', props.user.id), {
+    form.delete(route('core.user_manager.users.destroy', props.user.id), {
         preserveScroll: true,
         onSuccess: () => {
             emit('saved', 'User account deleted.');

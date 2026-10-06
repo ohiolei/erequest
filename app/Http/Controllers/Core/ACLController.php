@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Core;
 
 use App\Http\Controllers\Controller;
 use App\Services\ActivityService;
@@ -13,7 +13,7 @@ use Inertia\Response;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-class RoleManagementController extends Controller
+class ACLController extends Controller
 {
     public function __construct(protected ActivityService $activities) {}
 

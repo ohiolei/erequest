@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Core\UserManager;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -15,9 +15,9 @@ use Inertia\Response;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-class UserManagementController extends Controller
+class UserManagerController extends Controller
 {
-    public function __construct(protected ActivityService $activities) {}
+      public function __construct(protected ActivityService $activities) {}
 
     public function index(Request $request): Response
     {
@@ -110,7 +110,7 @@ class UserManagementController extends Controller
             'roles' => $validated['roles'],
         ]);
 
-        return to_route('admin.users.index');
+        return to_route('core.user_manager.users.index');
     }
 
     public function update(Request $request, User $user): RedirectResponse

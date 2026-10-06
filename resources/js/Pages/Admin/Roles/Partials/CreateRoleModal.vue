@@ -19,7 +19,7 @@ watch(() => props.show, (show) => {
 });
 
 const submit = () => {
-    form.post(route('admin.roles.store'), {
+    form.post(route('core.acl.roles.store'), {
         preserveScroll: true,
         onSuccess: () => {
             emit('saved', 'Role created.');

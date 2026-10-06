@@ -7,7 +7,6 @@ import AttachPermissionsModal from './Partials/AttachPermissionsModal.vue';
 import CreateRoleModal from './Partials/CreateRoleModal.vue';
 import DeleteRoleModal from './Partials/DeleteRoleModal.vue';
 import EditRoleModal from './Partials/EditRoleModal.vue';
-import CreatePermissionModal from './Partials/CreatePermissionModal.vue';
 import DeletePermissionModal from './Partials/DeletePermissionModal.vue';
 import EditPermissionModal from './Partials/EditPermissionModal.vue';
 
@@ -215,11 +214,8 @@ const paginationLabel = (label) => label
                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-4 dark:border-gray-700">
                     <div class="min-w-56 flex-1">
                         <h2 class="text-base font-semibold text-gray-900 dark:text-white">Permissions</h2>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Create and manage access permissions.</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage access permissions.</p>
                     </div>
-                    <button type="button" class="rounded-md bg-purple-700 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-800" @click="openPermissionModal('create')">
-                        Add permission
-                    </button>
                 </div>
 
                 <div class="overflow-x-auto rounded-md border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
@@ -315,11 +311,6 @@ const paginationLabel = (label) => label
             :role="selectedRole"
             @close="closeModal"
             @saved="showSavedMessage"
-        />
-        <CreatePermissionModal
-            :show="activePermissionModal === 'create'"
-            @close="closePermissionModal"
-            @saved="permissionSaved"
         />
         <EditPermissionModal
             :show="activePermissionModal === 'edit'"

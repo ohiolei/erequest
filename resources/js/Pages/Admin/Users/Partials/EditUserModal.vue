@@ -30,7 +30,7 @@ watch(() => [props.show, props.user], ([show, user]) => {
 const isStudent = computed(() => props.user?.roles?.includes('student'));
 
 const submit = () => {
-    form.patch(route('admin.users.update', props.user.id), {
+    form.patch(route('core.user_manager.users.update', props.user.id), {
         preserveScroll: true,
         onSuccess: () => {
             emit('saved', 'User profile updated.');

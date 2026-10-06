@@ -1,11 +1,12 @@
 <?php
 
-use App\Http\Controllers\Admin\RoleManagementController;
-use App\Http\Controllers\Admin\UserManagementController;
+
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\Core\ACLController;
+use App\Http\Controllers\Core\UserManager\UserManagerController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -18,51 +19,49 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function (Request $request) {
-    $recentActivities = \App\Models\Activity::query()
-        ->where('user_id', $request->user()->id)
-        ->latest()
-        ->limit(10)
-        ->get();
+Route::group(['middleware' => ['auth', 'verified']], function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    return Inertia::render('Dashboard', [
-        'isAdmin' => $request->user()->hasRole('admin'),
-        'recentActivities' => $recentActivities,
-    ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+    Route::group(['prefix' => 'profile'], function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::group(['prefix' => 'core', 'as' => 'core.'], function () {
+
+
+        Route::group(['prefix' => 'acl', 'as' => 'acl.'], function () {
+            Route::middleware(['auth', 'can:manage roles'])
+                ->group(function () {
+                    Route::get('/roles', [ACLController::class, 'index'])->name('roles.index');
+                    Route::post('/roles', [ACLController::class, 'store'])->name('roles.store');
+                    Route::patch('/roles/{role}', [ACLController::class, 'update'])->name('roles.update');
+                    Route::delete('/roles/{role}', [ACLController::class, 'destroy'])->name('roles.destroy');
+                    Route::post('/permissions', [ACLController::class, 'storePermission'])->name('permissions.store');
+                    Route::patch('/permissions/{permission}', [ACLController::class, 'updatePermission'])->name('permissions.update');
+                    Route::delete('/permissions/{permission}', [ACLController::class, 'destroyPermission'])->name('permissions.destroy');
+                });
+        });
+
+        Route::group(['prefix' => 'user_manager', 'as' => 'user_manager.'], function () {
+            Route::middleware(['auth', 'can:manage users'])
+                ->group(function () {
+                    Route::get('/users', [UserManagerController::class, 'index'])->name('users.index');
+                    Route::post('/users', [UserManagerController::class, 'store'])->name('users.store');
+                    Route::patch('/users/{user}', [UserManagerController::class, 'update'])->name('users.update');
+                    Route::patch('/users/{user}/roles', [UserManagerController::class, 'updateRoles'])->name('users.roles.update');
+                    Route::patch('/users/{user}/permissions', [UserManagerController::class, 'updatePermissions'])->name('users.permissions.update');
+                    Route::delete('/users/{user}', [UserManagerController::class, 'destroy'])->name('users.destroy');
+                    Route::post('/users/{user}/reset-password', [UserManagerController::class, 'resetPassword'])->name('users.reset-password');
+                    Route::post('/users/{user}/reset-2fa', [UserManagerController::class, 'resetTwoFactor'])->name('users.reset-2fa');
+                });
+        });
+    });
+
+
+
 });
-
-Route::middleware(['auth', 'can:manage roles'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
-        Route::get('/roles', [RoleManagementController::class, 'index'])->name('roles.index');
-        Route::post('/roles', [RoleManagementController::class, 'store'])->name('roles.store');
-        Route::patch('/roles/{role}', [RoleManagementController::class, 'update'])->name('roles.update');
-        Route::delete('/roles/{role}', [RoleManagementController::class, 'destroy'])->name('roles.destroy');
-        Route::post('/permissions', [RoleManagementController::class, 'storePermission'])->name('permissions.store');
-        Route::patch('/permissions/{permission}', [RoleManagementController::class, 'updatePermission'])->name('permissions.update');
-        Route::delete('/permissions/{permission}', [RoleManagementController::class, 'destroyPermission'])->name('permissions.destroy');
-    });
-
-Route::middleware(['auth', 'can:manage users'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
-        Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
-        Route::post('/users', [UserManagementController::class, 'store'])->name('users.store');
-        Route::patch('/users/{user}', [UserManagementController::class, 'update'])->name('users.update');
-        Route::patch('/users/{user}/roles', [UserManagementController::class, 'updateRoles'])->name('users.roles.update');
-        Route::patch('/users/{user}/permissions', [UserManagementController::class, 'updatePermissions'])->name('users.permissions.update');
-        Route::delete('/users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
-        Route::post('/users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
-        Route::post('/users/{user}/reset-2fa', [UserManagementController::class, 'resetTwoFactor'])->name('users.reset-2fa');
-    });
 
 Route::middleware('auth')->prefix('chats')->name('chats.')->group(function () {
     Route::get('/', [ChatController::class, 'index'])->name('index');
@@ -79,4 +78,4 @@ Route::middleware(['auth'])->prefix('admin/chats')->name('admin.chats.')->group(
     Route::patch('/{chat}/status', [\App\Http\Controllers\Admin\ChatController::class, 'updateStatus'])->name('status.update');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
