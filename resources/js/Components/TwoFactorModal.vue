@@ -16,10 +16,11 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'changed']);
 
 const step = ref('status'); // status | setup | recovery | disable
 const enabled = ref(false);
+const loadError = ref('');
 const qrSvg = ref(null);
 const secret = ref(null);
 const recoveryCodes = ref([]);
@@ -34,6 +35,7 @@ const disableError = ref('');
 
 const resetLocalState = () => {
     step.value = 'status';
+    loadError.value = '';
     qrSvg.value = null;
     secret.value = null;
     recoveryCodes.value = [];
@@ -50,10 +52,12 @@ const applySetup = (payload) => {
     qrSvg.value = payload.qr_svg ?? null;
     secret.value = payload.secret ?? null;
     enabled.value = false;
+    emit('changed', false);
     step.value = 'setup';
 };
 
 const loadStatus = async () => {
+    loadError.value = '';
     try {
         const { data } = await axios.get(route('two-factor.show'), { skipLoading: true });
         enabled.value = !!data.two_factor_enabled;
@@ -64,7 +68,8 @@ const loadStatus = async () => {
         }
 
         step.value = 'status';
-    } catch {
+    } catch (error) {
+        loadError.value = error.response?.data?.message || 'Unable to load two-factor status.';
         step.value = 'status';
     }
 };
@@ -110,6 +115,7 @@ const confirmSetup = async () => {
         });
 
         enabled.value = true;
+        emit('changed', true);
         recoveryCodes.value = data.recovery_codes || [];
         confirmCode.value = '';
         step.value = 'recovery';
@@ -175,6 +181,9 @@ const copyRecoveryCodes = async () => {
             </h2>
 
             <template v-if="step === 'status'">
+                <p v-if="loadError" role="alert" class="mt-3 rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
+                    {{ loadError }}
+                </p>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Add an extra layer of security to your account using an authenticator app.
                     After enabling, you will be asked for a code every time you log in.
@@ -207,7 +216,7 @@ const copyRecoveryCodes = async () => {
 
             <template v-else-if="step === 'setup'">
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Scan this QR code with your authenticator app, then enter the 6-digit code to confirm.
+                    Add an account manually in your authenticator app using this setup key, then enter the 6-digit code to confirm.
                 </p>
 
                 <div v-if="qrSvg" class="mt-4 flex justify-center">
@@ -215,7 +224,7 @@ const copyRecoveryCodes = async () => {
                 </div>
 
                 <p v-if="secret" class="mt-3 text-center text-xs text-gray-500 dark:text-gray-400 break-all">
-                    Or enter this key manually:
+                    Setup key:
                     <span class="font-mono text-gray-800 dark:text-gray-200">{{ secret }}</span>
                 </p>
 

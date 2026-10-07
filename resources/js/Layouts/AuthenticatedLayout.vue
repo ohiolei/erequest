@@ -6,7 +6,7 @@ import StudentLayout from '@/Layouts/StudentLayout.vue';
 
 const page = usePage();
 const layout = computed(() => (
-    page.props.auth.user?.roles?.includes('student')
+    page.props.auth.isStudent
         ? StudentLayout
         : StaffAuthenticatedLayout
 ));

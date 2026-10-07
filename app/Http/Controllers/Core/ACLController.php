@@ -52,70 +52,19 @@ class ACLController extends Controller
         ]);
     }
 
-    public function storePermission(Request $request): RedirectResponse
+    public function storePermission(): never
     {
-        $request->merge(['name' => strtolower(trim((string) $request->input('name')))]);
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:100', 'regex:/^[a-z0-9]+(?: [a-z0-9]+)*$/', Rule::unique('permissions', 'name')->where('guard_name', 'web')],
-        ]);
-
-        Permission::create([
-            'name' => $validated['name'],
-            'guard_name' => 'web',
-        ]);
-
-        $permission = Permission::where('name', $validated['name'])->where('guard_name', 'web')->first();
-
-        $this->activities->log('created_permission', 'Created permission', Permission::class, $permission->id, [
-            'name' => $validated['name'],
-        ]);
-
-        return back();
+        abort(403, 'Permissions are read-only.');
     }
 
-    public function updatePermission(Request $request, Permission $permission): RedirectResponse
+    public function updatePermission(Permission $permission): never
     {
-        abort_unless($permission->guard_name === 'web', 404);
-
-        $request->merge(['name' => strtolower(trim((string) $request->input('name')))]);
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:100', 'regex:/^[a-z0-9]+(?: [a-z0-9]+)*$/', Rule::unique('permissions', 'name')->where('guard_name', 'web')->ignore($permission->id)],
-        ]);
-
-        if ($permission->name === 'manage roles' && $validated['name'] !== 'manage roles') {
-            throw ValidationException::withMessages(['name' => 'The manage roles permission cannot be renamed.']);
-        }
-
-        $permission->update(['name' => $validated['name']]);
-
-        $this->activities->log('updated_permission', 'Updated permission', Permission::class, $permission->id, [
-            'name' => $validated['name'],
-        ]);
-
-        return back();
+        abort(403, 'Permissions are read-only.');
     }
 
-    public function destroyPermission(Permission $permission): RedirectResponse
+    public function destroyPermission(Permission $permission): never
     {
-        abort_unless($permission->guard_name === 'web', 404);
-
-        if ($permission->name === 'manage roles') {
-            throw ValidationException::withMessages(['permission' => 'The manage roles permission cannot be deleted.']);
-        }
-
-        if ($permission->roles()->exists() || $permission->users()->exists()) {
-            throw ValidationException::withMessages(['permission' => 'Remove this permission from roles and users before deleting it.']);
-        }
-
-        $permission->delete();
-
-        $this->activities->log('deleted_permission', 'Deleted permission', Permission::class, $permission->id, [
-            'name' => $permission->name,
-        ]);
-
-        return back();
+        abort(403, 'Permissions are read-only.');
     }
 
     public function store(Request $request): RedirectResponse

@@ -39,6 +39,7 @@ class LoginRequest extends FormRequest
      */
     public function authenticate(): void
     {
+        $this->session()->forget(['two_factor_login_user_id', 'two_factor_login_remember']);
         $this->ensureIsNotRateLimited();
 
         $identifier = trim((string) $this->input('email'));
@@ -54,6 +55,15 @@ class LoginRequest extends FormRequest
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
+        }
+
+        $user = Auth::user();
+        if ($user->two_factor_confirmed_at !== null) {
+            $this->session()->put([
+                'two_factor_login_user_id' => $user->id,
+                'two_factor_login_remember' => $this->boolean('remember'),
+            ]);
+            Auth::logout();
         }
 
         RateLimiter::clear($this->throttleKey());

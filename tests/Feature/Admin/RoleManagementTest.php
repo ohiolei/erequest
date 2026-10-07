@@ -137,55 +137,26 @@ class RoleManagementTest extends TestCase
             ->assertSessionHasErrors('role');
     }
 
-    public function test_admin_can_create_a_permission(): void
-    {
-        $admin = User::factory()->create();
-        $admin->assignRole('admin');
-
-        $this->actingAs($admin)
-            ->post(route('admin.permissions.store'), ['name' => 'approve requests'])
-            ->assertRedirect();
-
-        $this->assertDatabaseHas('permissions', [
-            'name' => 'approve requests',
-            'guard_name' => 'web',
-        ]);
-    }
-
-    public function test_admin_can_rename_a_permission_without_losing_role_assignments(): void
+    public function test_permissions_are_read_only_even_for_admins(): void
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
         $permission = Permission::findByName('create requests');
 
         $this->actingAs($admin)
-            ->patch(route('admin.permissions.update', $permission), ['name' => 'submit requests'])
-            ->assertRedirect();
-
-        $this->assertTrue(Role::findByName('student')->fresh()->hasPermissionTo('submit requests'));
-    }
-
-    public function test_permission_in_use_cannot_be_deleted(): void
-    {
-        $admin = User::factory()->create();
-        $admin->assignRole('admin');
-        $permission = Permission::findByName('create requests');
+            ->post(route('core.acl.permissions.store'), ['name' => 'approve requests'])
+            ->assertForbidden();
 
         $this->actingAs($admin)
-            ->delete(route('admin.permissions.destroy', $permission))
-            ->assertSessionHasErrors('permission');
-    }
-
-    public function test_unused_permission_can_be_deleted(): void
-    {
-        $admin = User::factory()->create();
-        $admin->assignRole('admin');
-        $permission = Permission::create(['name' => 'temporary feature', 'guard_name' => 'web']);
+            ->patch(route('core.acl.permissions.update', $permission), ['name' => 'submit requests'])
+            ->assertForbidden();
 
         $this->actingAs($admin)
-            ->delete(route('admin.permissions.destroy', $permission))
-            ->assertRedirect();
+            ->delete(route('core.acl.permissions.destroy', $permission))
+            ->assertForbidden();
 
-        $this->assertDatabaseMissing('permissions', ['id' => $permission->id]);
+        $this->assertDatabaseHas('permissions', ['id' => $permission->id, 'name' => 'create requests']);
+        $this->assertDatabaseMissing('permissions', ['name' => 'approve requests']);
+        $this->assertTrue(Role::findByName('student')->hasPermissionTo('create requests'));
     }
 }

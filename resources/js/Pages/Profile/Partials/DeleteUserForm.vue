@@ -39,16 +39,11 @@ const closeModal = () => {
 </script>
 
 <template>
-    <section class="space-y-6">
+    <section class="space-y-5">
         <header>
-            <h2 class="text-lg font-medium text-gray-900">
-                Delete Account
-            </h2>
-
-            <p class="mt-1 text-sm text-gray-600">
-                Once your account is deleted, all of its resources and data will
-                be permanently deleted. Before deleting your account, please
-                download any data or information that you wish to retain.
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Delete your account</h3>
+            <p class="mt-1 max-w-3xl text-sm leading-6 text-gray-500 dark:text-gray-400">
+                This permanently deletes your account and associated data. You will be asked to confirm with your password.
             </p>
         </header>
 

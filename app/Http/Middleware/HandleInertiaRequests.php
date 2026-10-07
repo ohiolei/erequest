@@ -75,6 +75,8 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $user,
+                'isStudent' => $user?->hasRole('student') ?? false,
+                'twoFactorEnabled' => $user?->two_factor_confirmed_at !== null,
                 'canManageUsers' => $user?->can('manage users') ?? false,
                 'canManageRoles' => $user?->can('manage roles') ?? false,
                 'canEditStudents' => $user?->can('edit students') ?? false,

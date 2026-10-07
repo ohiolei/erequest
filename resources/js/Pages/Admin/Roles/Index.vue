@@ -7,8 +7,6 @@ import AttachPermissionsModal from './Partials/AttachPermissionsModal.vue';
 import CreateRoleModal from './Partials/CreateRoleModal.vue';
 import DeleteRoleModal from './Partials/DeleteRoleModal.vue';
 import EditRoleModal from './Partials/EditRoleModal.vue';
-import DeletePermissionModal from './Partials/DeletePermissionModal.vue';
-import EditPermissionModal from './Partials/EditPermissionModal.vue';
 
 const props = defineProps({
     roles: {
@@ -30,8 +28,6 @@ const statusMessage = ref('');
 const activeTab = ref('roles');
 const activeModal = ref(null);
 const selectedRole = ref(null);
-const activePermissionModal = ref(null);
-const selectedPermission = ref(null);
 
 const openRoleModal = (modal, role = null) => {
     selectedRole.value = role;
@@ -49,20 +45,6 @@ const closeModal = () => {
 };
 
 const showSavedMessage = (message) => {
-    statusMessage.value = message;
-};
-
-const openPermissionModal = (modal, permission = null) => {
-    selectedPermission.value = permission;
-    activePermissionModal.value = modal;
-};
-
-const closePermissionModal = () => {
-    activePermissionModal.value = null;
-    selectedPermission.value = null;
-};
-
-const permissionSaved = (message) => {
     statusMessage.value = message;
 };
 
@@ -153,10 +135,11 @@ const paginationLabel = (label) => label
                                 <td class="whitespace-nowrap px-4 py-3 text-right">
                                     <Dropdown align="right" width="48" content-classes="bg-white py-1 dark:bg-gray-800">
                                         <template #trigger>
-                                            <button type="button" class="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                                                Actions
-                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+                                            <button type="button" aria-label="Role actions" title="Role actions" class="inline-flex items-center justify-center rounded-md border border-gray-300 p-1.5 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <circle cx="5" cy="12" r="2" />
+                                                    <circle cx="12" cy="12" r="2" />
+                                                    <circle cx="19" cy="12" r="2" />
                                                 </svg>
                                             </button>
                                         </template>
@@ -214,7 +197,7 @@ const paginationLabel = (label) => label
                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-4 dark:border-gray-700">
                     <div class="min-w-56 flex-1">
                         <h2 class="text-base font-semibold text-gray-900 dark:text-white">Permissions</h2>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage access permissions.</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Permissions are read-only. Attach existing permissions to roles from the Roles tab.</p>
                     </div>
                 </div>
 
@@ -224,7 +207,6 @@ const paginationLabel = (label) => label
                             <tr>
                                 <th scope="col" class="px-4 py-3">Permission</th>
                                 <th scope="col" class="px-4 py-3">Assigned to</th>
-                                <th scope="col" class="px-4 py-3 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -235,29 +217,9 @@ const paginationLabel = (label) => label
                                 <td class="whitespace-nowrap px-4 py-3 text-gray-600 dark:text-gray-300">
                                     {{ permission.roles_count }} roles · {{ permission.users_count }} users
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 text-right">
-                                    <Dropdown align="right" width="48" content-classes="bg-white py-1 dark:bg-gray-800">
-                                        <template #trigger>
-                                            <button type="button" class="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                                                Actions
-                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
-                                                </svg>
-                                            </button>
-                                        </template>
-                                        <template #content>
-                                            <button type="button" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700" @click="openPermissionModal('edit', permission)">
-                                                Edit permission
-                                            </button>
-                                            <button type="button" class="block w-full px-4 py-2 text-left text-sm text-rose-700 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/30" @click="openPermissionModal('delete', permission)">
-                                                Delete permission
-                                            </button>
-                                        </template>
-                                    </Dropdown>
-                                </td>
                             </tr>
                             <tr v-if="permissionRecords.data.length === 0">
-                                <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-500">No permissions have been created.</td>
+                                <td colspan="2" class="px-4 py-8 text-center text-sm text-gray-500">No permissions have been created.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -311,18 +273,6 @@ const paginationLabel = (label) => label
             :role="selectedRole"
             @close="closeModal"
             @saved="showSavedMessage"
-        />
-        <EditPermissionModal
-            :show="activePermissionModal === 'edit'"
-            :permission="selectedPermission"
-            @close="closePermissionModal"
-            @saved="permissionSaved"
-        />
-        <DeletePermissionModal
-            :show="activePermissionModal === 'delete'"
-            :permission="selectedPermission"
-            @close="closePermissionModal"
-            @saved="permissionSaved"
         />
     </AuthenticatedLayout>
 </template>

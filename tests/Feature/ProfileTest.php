@@ -18,7 +18,8 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->get('/profile');
 
-        $response->assertOk();
+        $response->assertOk()
+            ->assertInertia(fn ($page) => $page->where('auth.twoFactorEnabled', false));
     }
 
     public function test_profile_information_can_be_updated(): void

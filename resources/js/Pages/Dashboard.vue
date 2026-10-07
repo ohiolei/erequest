@@ -90,7 +90,7 @@ const formatActivityDate = (value) => {
                         Support chats
                     </Link>
                     <Link
-                        v-if="user?.roles?.includes('student')"
+                        v-if="page.props.auth.isStudent"
                         :href="route('chats.index')"
                         class="inline-flex items-center gap-2 rounded-md bg-purple-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-800"
                     >

@@ -35,27 +35,28 @@ const updatePassword = () => {
 
 <template>
     <section>
-        <header>
-            <h2 class="text-lg font-medium text-gray-900">
-                Update Password
-            </h2>
-
-            <p class="mt-1 text-sm text-gray-600">
-                Ensure your account is using a long, random password to stay
-                secure.
-            </p>
+        <header class="mb-6 flex items-start gap-4 border-b border-gray-100 pb-5 dark:border-gray-700">
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4m-2 0h12a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6a2 2 0 012-2zm6 4v2" />
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Password & sign-in</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Choose a strong password you don't use on other sites.</p>
+            </div>
         </header>
 
-        <form @submit.prevent="updatePassword" class="mt-6 space-y-6">
-            <div>
-                <InputLabel for="current_password" value="Current Password" />
+        <form @submit.prevent="updatePassword" class="grid gap-5 sm:grid-cols-2">
+            <div class="sm:col-span-2 sm:max-w-xl">
+                <InputLabel for="current_password" value="Current password" class="dark:!text-gray-300" />
 
                 <TextInput
                     id="current_password"
                     ref="currentPasswordInput"
                     v-model="form.current_password"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                     autocomplete="current-password"
                 />
 
@@ -66,14 +67,14 @@ const updatePassword = () => {
             </div>
 
             <div>
-                <InputLabel for="password" value="New Password" />
+                <InputLabel for="password" value="New password" class="dark:!text-gray-300" />
 
                 <TextInput
                     id="password"
                     ref="passwordInput"
                     v-model="form.password"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                     autocomplete="new-password"
                 />
 
@@ -83,14 +84,15 @@ const updatePassword = () => {
             <div>
                 <InputLabel
                     for="password_confirmation"
-                    value="Confirm Password"
+                    value="Confirm new password"
+                    class="dark:!text-gray-300"
                 />
 
                 <TextInput
                     id="password_confirmation"
                     v-model="form.password_confirmation"
                     type="password"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                     autocomplete="new-password"
                 />
 
@@ -100,8 +102,10 @@ const updatePassword = () => {
                 />
             </div>
 
-            <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
+            <div class="flex flex-wrap items-center gap-4 border-t border-gray-100 pt-5 dark:border-gray-700 sm:col-span-2">
+                <PrimaryButton :disabled="form.processing">
+                    {{ form.processing ? 'Updating...' : 'Update password' }}
+                </PrimaryButton>
 
                 <Transition
                     enter-active-class="transition ease-in-out"
@@ -111,9 +115,10 @@ const updatePassword = () => {
                 >
                     <p
                         v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600"
+                        role="status"
+                        class="text-sm font-medium text-emerald-700 dark:text-emerald-300"
                     >
-                        Saved.
+                        Password updated.
                     </p>
                 </Transition>
             </div>

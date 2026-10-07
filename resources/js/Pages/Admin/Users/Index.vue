@@ -215,10 +215,11 @@ const paginationLabel = (label) => label
                             <td class="whitespace-nowrap px-4 py-3 text-right">
                                 <Dropdown align="right" width="56" content-classes="bg-white py-1 dark:bg-gray-800">
                                     <template #trigger>
-                                        <button type="button" class="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                                            Actions
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+                                        <button type="button" aria-label="User actions" title="User actions" class="inline-flex items-center justify-center rounded-md border border-gray-300 p-1.5 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <circle cx="5" cy="12" r="2" />
+                                                <circle cx="12" cy="12" r="2" />
+                                                <circle cx="19" cy="12" r="2" />
                                             </svg>
                                         </button>
                                     </template>
