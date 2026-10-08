@@ -9,8 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('activities', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->uuid('id')->primary();
+            $table->uuid('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
             $table->string('action');
             $table->string('description');
             $table->string('subject_type')->nullable();
@@ -22,8 +23,11 @@ return new class extends Migration
         });
 
         Schema::create('activity_user', function (Blueprint $table) {
-            $table->foreignId('activity_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->uuid('activity_id');
+            $table->uuid('user_id');
+            $table->foreign('activity_id')->references('id')->on('activities')->cascadeOnDelete();
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->primary(['activity_id', 'user_id']);
         });
     }
 

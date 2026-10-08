@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('matric_no', 50)->nullable()->unique();
-              $table->string('staff_number', 50)->nullable()->unique();
+            $table->string('staff_number', 50)->nullable()->unique();
         });
     }
 
@@ -18,7 +18,8 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropUnique(['matric_no']);
-            $table->dropColumn('matric_no');
+            $table->dropUnique(['staff_number']);
+            $table->dropColumn(['matric_no', 'staff_number']);
         });
     }
 };

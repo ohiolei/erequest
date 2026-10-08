@@ -9,16 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('students', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete()->unique();
-            $table->string('matric_no')->unique();
+            $table->uuid('id')->primary();
+            $table->uuid('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->unique(['user_id']);
+            $table->string('matric_no', 50)->unique();
             $table->string('program')->nullable();
             $table->string('level')->nullable();
             $table->string('college')->nullable();
             $table->timestamp('admitted_at')->nullable();
             $table->timestamps();
-
-            $table->index(['matric_no']);
         });
     }
 

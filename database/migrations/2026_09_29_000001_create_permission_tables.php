@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('permissions', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('name');
             $table->string('guard_name');
             $table->timestamps();
@@ -17,7 +17,7 @@ return new class extends Migration
         });
 
         Schema::create('roles', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('name');
             $table->string('guard_name');
             $table->timestamps();
@@ -25,26 +25,26 @@ return new class extends Migration
         });
 
         Schema::create('model_has_permissions', function (Blueprint $table) {
-            $table->unsignedBigInteger('permission_id');
+            $table->uuid('permission_id');
             $table->string('model_type');
-            $table->unsignedBigInteger('model_id');
+            $table->uuid('model_id');
             $table->index(['model_id', 'model_type']);
             $table->primary(['permission_id', 'model_id', 'model_type']);
             $table->foreign('permission_id')->references('id')->on('permissions')->cascadeOnDelete();
         });
 
         Schema::create('model_has_roles', function (Blueprint $table) {
-            $table->unsignedBigInteger('role_id');
+            $table->uuid('role_id');
             $table->string('model_type');
-            $table->unsignedBigInteger('model_id');
+            $table->uuid('model_id');
             $table->index(['model_id', 'model_type']);
             $table->primary(['role_id', 'model_id', 'model_type']);
             $table->foreign('role_id')->references('id')->on('roles')->cascadeOnDelete();
         });
 
         Schema::create('role_has_permissions', function (Blueprint $table) {
-            $table->unsignedBigInteger('permission_id');
-            $table->unsignedBigInteger('role_id');
+            $table->uuid('permission_id');
+            $table->uuid('role_id');
             $table->primary(['permission_id', 'role_id']);
             $table->foreign('permission_id')->references('id')->on('permissions')->cascadeOnDelete();
             $table->foreign('role_id')->references('id')->on('roles')->cascadeOnDelete();

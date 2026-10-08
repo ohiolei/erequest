@@ -9,12 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('chats', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->uuid('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->string('category');
             $table->string('subject');
             $table->string('status')->default('open');
-            $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
+            $table->uuid('assigned_to')->nullable();
+            $table->foreign('assigned_to')->references('id')->on('users')->nullOnDelete();
             $table->timestamp('closed_at')->nullable();
             $table->timestamps();
 
@@ -23,9 +25,11 @@ return new class extends Migration
         });
 
         Schema::create('chat_messages', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('chat_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->uuid('chat_id');
+            $table->foreign('chat_id')->references('id')->on('chats')->cascadeOnDelete();
+            $table->uuid('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->text('message');
             $table->boolean('is_read')->default(false);
             $table->timestamps();

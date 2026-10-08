@@ -4,6 +4,9 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -13,6 +16,17 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasRoles, Notifiable;
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $user) {
+            $user->id ??= (string) \Illuminate\Support\Str::uuid();
+        });
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -69,8 +83,38 @@ class User extends Authenticatable
         ], fn ($part) => is_string($part) && trim($part) !== ''));
     }
 
-    public function activities()
+    public function activities(): HasMany
     {
         return $this->hasMany(Activity::class);
+    }
+
+    public function student(): HasOne
+    {
+        return $this->hasOne(Student::class);
+    }
+
+    public function staff(): HasOne
+    {
+        return $this->hasOne(Staff::class);
+    }
+
+    public function chats(): HasMany
+    {
+        return $this->hasMany(Chat::class);
+    }
+
+    public function assignedChats(): HasMany
+    {
+        return $this->hasMany(Chat::class, 'assigned_to');
+    }
+
+    public function chatMessages(): HasMany
+    {
+        return $this->hasMany(ChatMessage::class);
+    }
+
+    public function participatedActivities(): BelongsToMany
+    {
+        return $this->belongsToMany(Activity::class);
     }
 }
