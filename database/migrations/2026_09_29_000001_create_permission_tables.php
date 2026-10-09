@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('permissions', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->string('name');
             $table->string('guard_name');
             $table->timestamps();
@@ -17,7 +17,7 @@ return new class extends Migration
         });
 
         Schema::create('roles', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->string('name');
             $table->string('guard_name');
             $table->timestamps();
@@ -25,7 +25,7 @@ return new class extends Migration
         });
 
         Schema::create('model_has_permissions', function (Blueprint $table) {
-            $table->uuid('permission_id');
+            $table->unsignedBigInteger('permission_id');
             $table->string('model_type');
             $table->uuid('model_id');
             $table->index(['model_id', 'model_type']);
@@ -34,7 +34,7 @@ return new class extends Migration
         });
 
         Schema::create('model_has_roles', function (Blueprint $table) {
-            $table->uuid('role_id');
+            $table->unsignedBigInteger('role_id');
             $table->string('model_type');
             $table->uuid('model_id');
             $table->index(['model_id', 'model_type']);
@@ -43,8 +43,8 @@ return new class extends Migration
         });
 
         Schema::create('role_has_permissions', function (Blueprint $table) {
-            $table->uuid('permission_id');
-            $table->uuid('role_id');
+            $table->unsignedBigInteger('permission_id');
+            $table->unsignedBigInteger('role_id');
             $table->primary(['permission_id', 'role_id']);
             $table->foreign('permission_id')->references('id')->on('permissions')->cascadeOnDelete();
             $table->foreign('role_id')->references('id')->on('roles')->cascadeOnDelete();

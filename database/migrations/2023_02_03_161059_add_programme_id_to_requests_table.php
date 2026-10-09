@@ -31,11 +31,12 @@ return new class extends Migration
     public function down()
     {
         Schema::table('requests', function (Blueprint $table) {
-            $table->dropColumn('programme_id'); // Remove "active" field
-            $table->dropColumn('date_declined'); // Remove "active" field
-            $table->dropColumn('decline_comment'); // Remove "active" field
-
-
+            $table->dropForeign(['programme_id']);
+            $table->dropColumn([
+                'programme_id',
+                'date_declined',
+                'decline_comment',
+            ]);
         });
     }
 };
